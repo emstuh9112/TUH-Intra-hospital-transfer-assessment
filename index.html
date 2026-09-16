@@ -3,828 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>แบบประเมิน Pre-Transfer Assessment</title>
-    <!-- Google Fonts & Tailwind CSS CDN -->
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>ระบบประเมินและเกณฑ์การนำส่งผู้ป่วย (Inter-hospital Transport Checklist)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Sarabun', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
     <style>
-        body { font-family: 'Sarabun', sans-serif; }
-        .risk-high-bg { background-color: #fef2f2; border-color: #fca5a5; }
-        .risk-low-bg { background-color: #fff7ed; border-color: #fdba74; }
-        .risk-none-bg { background-color: #f0fdf4; border-color: #86efac; }
-        
-        /* CSS สำหรับการพิมพ์ (Print Styles) */
         @media print {
-            @page {
-                size: A4 portrait;
-                margin: 8mm;
-            }
-            body {
-                background: white !important;
-                color: black !important;
-                font-size: 11pt;
-            }
             .no-print {
                 display: none !important;
             }
-            .print-clean {
-                border: 1px solid #ccc !important;
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container-box {
                 box-shadow: none !important;
-                background: transparent !important;
-                padding: 4px !important;
-                margin-bottom: 6px !important;
-            }
-            /* ซ่อน input แบบกล่อง แล้วแสดงเป็นข้อความธรรมดา */
-            input[type="text"], input[type="number"], select, textarea {
-                border: none !important;
-                border-bottom: 1px solid #666 !important;
-                border-radius: 0 !important;
-                background: transparent !important;
-                padding: 0 !important;
-                box-shadow: none !important;
-            }
-            /* ซ่อน Checkbox / Radio ที่ไม่ได้เลือก */
-            input[type="checkbox"]:not(:checked),
-            input[type="radio"]:not(:checked) {
-                display: none !important;
-            }
-            /* ซ่อน Label ของ Checkbox/Radio ที่ไม่ได้เลือก */
-            .item-wrapper:has(input[type="checkbox"]:not(:checked)),
-            .item-wrapper:has(input[type="radio"]:not(:checked)) {
-                display: none !important;
-            }
-            /* ซ่อน Category/Group ที่ไม่มี item ถูกเลือก */
-            .category-block:not(:has(input:checked)) {
-                display: none !important;
-            }
-            .risk-subgroup:not(:has(input:checked)) {
-                display: none !important;
-            }
-            /* ซ่อนแถบสี/ป้ายชื่อกลุ่มความเสี่ยงเวลากดพิมพ์ */
-            .risk-badge {
-                display: none !important;
-            }
-            .risk-high-bg, .risk-low-bg, .risk-none-bg {
-                background-color: transparent !important;
                 border: none !important;
                 padding: 0 !important;
-            }
-            .print-grid-2 {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 8px;
-            }
-            .print-tight {
-                margin: 0 !important;
-                padding: 2px 0 !important;
             }
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 p-2 md:p-6 min-h-screen">
+<body class="bg-gray-100 min-h-screen p-4 md:p-8">
 
-    <div class="max-w-5xl mx-auto bg-white p-4 md:p-8 rounded-xl shadow-lg print-clean">
-        
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6 md:p-8 container-box">
         <!-- Header -->
-        <div class="border-b-2 border-slate-300 pb-3 mb-4 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-800">แบบประเมินผู้ป่วยก่อนการย้าย (Pre-Transfer Assessment)</h1>
-                <p class="text-sm text-slate-500">ระบบประเมินความเสี่ยง กำหนดทีมลำเลียง อุปกรณ์ และคำนวณออกซิเจน</p>
-            </div>
-            <div class="text-right hidden sm:block">
-                <span class="text-xs bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full font-semibold">Medical Transport Form</span>
-            </div>
+        <div class="border-b pb-4 mb-6 text-center">
+            <h1 class="text-2xl font-bold text-gray-800">แบบประเมินและเกณฑ์การนำส่งผู้ป่วย</h1>
+            <p class="text-gray-600 text-sm mt-1">Inter-hospital & Intra-hospital Transport Assessment Checklist</p>
         </div>
 
-        <!-- 1. Patient Information & Assessment Time -->
-        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6 print-tight">
-            <h2 class="text-base font-bold text-slate-700 mb-2 border-b pb-1">1. ข้อมูลผู้ป่วยและเวลาประเมิน (Patient Information)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <form id="transportForm" class="space-y-6">
+            <!-- Patient Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อ-นามสกุล / HN:</label>
-                    <input type="text" id="patientName" class="w-full px-2.5 py-1.5 border rounded border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุชื่อ หรือ HN">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">อายุ (ปี):</label>
-                    <input type="number" id="patientAge" class="w-full px-2.5 py-1.5 border rounded border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="อายุ">
+                    <label class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุล ผู้ป่วย</label>
+                    <input type="text" id="patientName" class="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">วันที่-เวลา ประเมิน:</label>
-                    <input type="datetime-local" id="assessDateTime" class="w-full px-2.5 py-1.5 border rounded border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    <label class="block text-sm font-medium text-gray-700">อายุ (ปี)</label>
+                    <input type="number" id="patientAge" class="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">หอผู้ป่วยต้นทาง:</label>
-                    <input type="text" id="fromWard" class="w-full px-2.5 py-1.5 border rounded border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น ER, ICU 1">
+                    <label class="block text-sm font-medium text-gray-700">ย้ายจาก (Ward/Dept)</label>
+                    <input type="text" id="fromWard" class="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">หอผู้ป่วยปลายทาง:</label>
-                    <input type="text" id="toWard" class="w-full px-2.5 py-1.5 border rounded border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น CT scan, Ward 4">
+                    <label class="block text-sm font-medium text-gray-700">ไปยัง (Ward/Dept/Hospital)</label>
+                    <input type="text" id="toWard" class="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อผู้ประเมิน:</label>
-                    <input type="text" id="assessorName" class="w-full px-2.5 py-1.5 border rounded border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ชื่อ-สกุล / ตำแหน่ง">
+                    <label class="block text-sm font-medium text-gray-700">วัน-เวลา ที่ประเมิน</label>
+                    <input type="datetime-local" id="assessDateTime" class="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">ผู้ประเมิน</label>
+                    <input type="text" id="assessorName" class="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
-        </div>
 
-        <!-- 2. Checklist Items -->
-        <form id="assessmentForm" class="space-y-6">
-            <h2 class="text-base font-bold text-slate-700 border-b pb-1 mb-2">2. รายการประเมินสภาวะผู้ป่วย (Checklist Items)</h2>
+            <!-- Clinical Items Assessment -->
+            <div class="space-y-4">
+                <h2 class="text-lg font-semibold text-gray-800 border-b pb-2">รายการประเมินสภาวะผู้ป่วย</h2>
 
-            <!-- Airway & C-spine -->
-            <div class="category-block border rounded-lg p-3 bg-white">
-                <h3 class="font-bold text-slate-800 text-sm mb-2 border-b pb-1">Airway & C-spine</h3>
-                
-                <div class="risk-subgroup risk-high-bg border rounded p-2 mb-2">
-                    <span class="risk-badge text-xs font-bold text-red-700 block mb-1">● High Risk</span>
-                    <div class="space-y-1.5 text-xs">
-                        <div class="item-wrapper flex items-center flex-wrap gap-2">
-                            <input type="checkbox" id="item_ett" class="chk-high" data-equip="ett">
-                            <label for="item_ett" class="font-medium">Definitive airway (ETT, TT, LMA)</label>
-                            <span class="inline-flex items-center gap-1">
-                                Size: <input type="text" id="ett_size" class="border rounded px-1 w-16 h-6 text-xs">
-                                Depth: <input type="text" id="ett_depth" class="border rounded px-1 w-16 h-6 text-xs">
-                            </span>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_airway_obs" class="chk-high" data-equip="airway_obs">
-                            <label for="item_airway_obs">Risk of airway obstruction</label>
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- SpO2 -->
+                    <div class="p-3 border rounded-lg">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">SpO2 (%)</label>
+                        <input type="number" id="o2_psi" oninput="calculateRisk()" placeholder="ระบุค่า SpO2" class="w-full border border-gray-300 rounded-md p-2">
                     </div>
-                </div>
 
-                <div class="risk-subgroup risk-low-bg border rounded p-2">
-                    <span class="risk-badge text-xs font-bold text-orange-700 block mb-1">● Low Risk</span>
-                    <div class="space-y-1.5 text-xs">
-                        <div class="item-wrapper flex items-center flex-wrap gap-2">
-                            <input type="checkbox" id="item_oral_airway" class="chk-low" data-equip="oral_airway">
-                            <label for="item_oral_airway">Oral airway / Nasal airway</label>
-                            <span class="inline-flex items-center gap-1">
-                                Size: <input type="text" id="airway_size" class="border rounded px-1 w-16 h-6 text-xs">
-                            </span>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_ccollar" class="chk-low">
-                            <label for="item_ccollar">Cervical collar</label>
-                        </div>
+                    <!-- GCS -->
+                    <div class="p-3 border rounded-lg">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">GCS Score (3-15)</label>
+                        <input type="number" id="gcs_score" min="3" max="15" oninput="calculateRisk()" placeholder="ระบุ GCS" class="w-full border border-gray-300 rounded-md p-2">
+                    </div>
+
+                    <!-- Oxygen Support -->
+                    <div class="p-3 border rounded-lg">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">การให้ออกซิเจน</label>
+                        <select id="o2_support" onchange="calculateRisk()" class="w-full border border-gray-300 rounded-md p-2">
+                            <option value="none">Room Air (ไม่ใช้ออกซิเจน)</option>
+                            <option value="low">Low Flow (Cannula / Mask)</option>
+                            <option value="high">High Flow / ETT / Ventilator</option>
+                        </select>
+                    </div>
+
+                    <!-- Vasoactive Drugs -->
+                    <div class="p-3 border rounded-lg">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ยากระตุ้นความดัน (Vasoactive drug)</label>
+                        <select id="vasoactive" onchange="calculateRisk()" class="w-full border border-gray-300 rounded-md p-2">
+                            <option value="none">ไม่มีการใช้ยา</option>
+                            <option value="single">ใช้ยา 1 ตัว (Dopamine/Norepinephrine ฯลฯ)</option>
+                            <option value="multiple">ใช้ยา >= 2 ตัว หรือปรับ Dose ต่อเนื่อง</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <!-- Breathing & Oxygenation Support -->
-            <div class="category-block border rounded-lg p-3 bg-white">
-                <h3 class="font-bold text-slate-800 text-sm mb-2 border-b pb-1">Breathing & Oxygenation Support</h3>
-                
-                <div class="risk-subgroup risk-high-bg border rounded p-2 mb-2">
-                    <span class="risk-badge text-xs font-bold text-red-700 block mb-1">● High Risk</span>
-                    <div class="space-y-1.5 text-xs">
-                        <div class="item-wrapper flex items-center flex-wrap gap-2">
-                            <input type="checkbox" id="item_vent" class="chk-high" data-equip="vent">
-                            <label for="item_vent" class="font-medium">On ventilator / NIV / HFNC</label>
-                            <span class="inline-flex items-center gap-1">
-                                Setting: <input type="text" id="vent_setting" class="border rounded px-1 w-48 h-6 text-xs" placeholder="เช่น SIMV, FiO2 0.5">
-                            </span>
-                        </div>
-                        <div class="item-wrapper space-y-1">
-                            <div class="flex items-center gap-2">
-                                <input type="checkbox" id="item_icd" class="chk-high">
-                                <label for="item_icd" class="font-medium">On ICD</label>
-                            </div>
-                            <div class="pl-6 space-y-1 text-slate-600">
-                                <div>1) Side: <input type="text" class="border rounded px-1 w-20 h-5 text-xs"> Depth: <input type="text" class="border rounded px-1 w-20 h-5 text-xs"></div>
-                                <div>2) Side: <input type="text" class="border rounded px-1 w-20 h-5 text-xs"> Depth: <input type="text" class="border rounded px-1 w-20 h-5 text-xs"></div>
-                            </div>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_rr_high" class="chk-high" data-equip="rr_abnormal">
-                            <label for="item_rr_high">RR &lt; 12 or &gt; 30, irregular</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="risk-subgroup risk-low-bg border rounded p-2 mb-2">
-                    <span class="risk-badge text-xs font-bold text-orange-700 block mb-1">● Low Risk</span>
-                    <div class="space-y-1.5 text-xs">
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_rr_low" class="chk-low">
-                            <label for="item_rr_low">RR 24 – 30</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_mask_bag" class="chk-low" data-equip="mask_bag">
-                            <label for="item_mask_bag">Mask c bag</label>
-                            <span>Flow: <input type="text" class="border rounded px-1 w-16 h-5 text-xs"> LPM</span>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_cannula" class="chk-low" data-equip="cannula">
-                            <label for="item_cannula">Cannula</label>
-                            <span>Flow: <input type="text" class="border rounded px-1 w-16 h-5 text-xs"> LPM</span>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_mon_sat" class="chk-low" data-equip="mon_sat">
-                            <label for="item_mon_sat">Monitor sat</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="risk-subgroup risk-none-bg border rounded p-2">
-                    <span class="risk-badge text-xs font-bold text-green-700 block mb-1">● No Risk</span>
-                    <div class="item-wrapper flex items-center gap-2 text-xs">
-                        <input type="checkbox" id="item_rr_norisk" class="chk-norisk">
-                        <label for="item_rr_norisk">RR 12 – 24</label>
-                    </div>
+            <!-- Result Summary Box -->
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 mt-6">
+                <h3 class="text-md font-bold text-blue-900 mb-2">สรุปผลการประเมินทีมนำส่ง (Escort Team Requirement)</h3>
+                <div class="text-2xl font-extrabold text-blue-700 mb-3" id="final_escort">กรุณากรอกข้อมูลเพื่อประเมิน</div>
+                <div class="text-sm text-gray-600 border-t border-blue-200 pt-2" id="res_counts">
+                    รายละเอียดสภาวะความเสี่ยง: -
                 </div>
             </div>
 
-            <!-- Circulation -->
-            <div class="category-block border rounded-lg p-3 bg-white">
-                <h3 class="font-bold text-slate-800 text-sm mb-2 border-b pb-1">Circulation</h3>
-                
-                <div class="risk-subgroup risk-high-bg border rounded p-2 mb-2">
-                    <span class="risk-badge text-xs font-bold text-red-700 block mb-1">● High Risk</span>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5 text-xs">
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_cvc" class="chk-high">
-                            <label for="item_cvc">Active central venous cath / Intraosseous</label>
-                            <span>Depth: <input type="text" class="border rounded px-1 w-16 h-5 text-xs"></span>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_unstable_vs" class="chk-high" data-equip="cardiac_risk">
-                            <label for="item_unstable_vs">Unstable vital sign (shock, severe arrhythmia)</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_bleeding" class="chk-high">
-                            <label for="item_bleeding">Active bleeding / Internal bleeding</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_blood" class="chk-high">
-                            <label for="item_blood">Blood component</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_ami_high" class="chk-high" data-equip="cardiac_risk">
-                            <label for="item_ami_high">High risk for arrhythmia/AMI in first 48 hr.</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_pacemaker" class="chk-high" data-equip="cardiac_risk">
-                            <label for="item_pacemaker">Temporary pacemaker</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_ekg_unstable" class="chk-high" data-equip="cardiac_risk">
-                            <label for="item_ekg_unstable">Monitor EKG in unstable patient</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_high_alert" class="chk-high" data-equip="sedative">
-                            <label for="item_high_alert">High alert drug / IV sedative drug</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_inotropic" class="chk-high">
-                            <label for="item_inotropic">Inotropic drugs / IV load</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="risk-subgroup risk-low-bg border rounded p-2 mb-2">
-                    <span class="risk-badge text-xs font-bold text-orange-700 block mb-1">● Low Risk</span>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5 text-xs">
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_stable_deter" class="chk-low">
-                            <label for="item_stable_deter">Stable but risk of deterioration</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_ami_low" class="chk-low">
-                            <label for="item_ami_low">Low risk for arrhythmia/AMI in after 48 hr.</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_ekg_stable" class="chk-low">
-                            <label for="item_ekg_stable">Monitor EKG in stable patient</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_iv_rate" class="chk-low" data-equip="pump">
-                            <label for="item_iv_rate">IV fluid rate &lt; 40 or &gt; 120 ml/hr / ใช้ Syringe pump</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="risk-subgroup risk-none-bg border rounded p-2">
-                    <span class="risk-badge text-xs font-bold text-green-700 block mb-1">● No Risk</span>
-                    <div class="item-wrapper flex items-center gap-2 text-xs">
-                        <input type="checkbox" id="item_no_arrhythmia" class="chk-norisk">
-                        <label for="item_no_arrhythmia">No risk for arrhythmia</label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Disability -->
-            <div class="category-block border rounded-lg p-3 bg-white">
-                <h3 class="font-bold text-slate-800 text-sm mb-2 border-b pb-1">Disability</h3>
-                
-                <div class="risk-subgroup risk-high-bg border rounded p-2 mb-2">
-                    <span class="risk-badge text-xs font-bold text-red-700 block mb-1">● High Risk</span>
-                    <div class="space-y-1.5 text-xs">
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_gcs_low" class="chk-high" data-equip="gcs_drop">
-                            <label for="item_gcs_low">GCS &lt; 13 / VPU / Worse than previous status (-2)</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_head_high" class="chk-high" data-equip="head_injury_high">
-                            <label for="item_head_high">Mild head injury (moderate or high risk)</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_seizure" class="chk-high" data-equip="seizure_ich">
-                            <label for="item_seizure">Seizure / Intracerebral hemorrhage (ICH)</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="risk-subgroup risk-low-bg border rounded p-2 mb-2">
-                    <span class="risk-badge text-xs font-bold text-orange-700 block mb-1">● Low Risk</span>
-                    <div class="space-y-1.5 text-xs">
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_gcs_mid" class="chk-low">
-                            <label for="item_gcs_mid">GCS 13-14</label>
-                        </div>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="item_head_low" class="chk-low">
-                            <label for="item_head_low">Mild head injury (low risk)</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="risk-subgroup risk-none-bg border rounded p-2">
-                    <span class="risk-badge text-xs font-bold text-green-700 block mb-1">● No Risk</span>
-                    <div class="item-wrapper flex items-center gap-2 text-xs">
-                        <input type="checkbox" id="item_gcs_normal" class="chk-norisk">
-                        <label for="item_gcs_normal">GCS = 15 / Same as previous status</label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Equipment Section -->
-            <div class="category-block border rounded-lg p-3 bg-white">
-                <h3 class="font-bold text-slate-800 text-sm mb-2 border-b pb-1">Equipment Attached</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <div class="risk-subgroup risk-high-bg border rounded p-2">
-                        <span class="risk-badge text-xs font-bold text-red-700 block mb-1">● High Risk</span>
-                        <div class="item-wrapper flex items-center gap-2 text-xs">
-                            <input type="checkbox" id="item_iabp" class="chk-high" data-equip="iabp_ecmo">
-                            <label for="item_iabp">IABP / ECMO (MD required)</label>
-                        </div>
-                    </div>
-                    <div class="risk-subgroup risk-low-bg border rounded p-2">
-                        <span class="risk-badge text-xs font-bold text-orange-700 block mb-1">● Low Risk</span>
-                        <div class="space-y-1 text-xs">
-                            <div class="item-wrapper flex items-center gap-2">
-                                <input type="checkbox" id="item_pump_need" class="chk-low" data-equip="pump">
-                                <label for="item_pump_need">Infusion / Syringe (Need)</label>
-                            </div>
-                            <div class="item-wrapper flex items-center gap-2">
-                                <input type="checkbox" id="item_lsb" class="chk-low">
-                                <label for="item_lsb">Long spinal board</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Riker Scale -->
-            <div class="category-block border rounded-lg p-3 bg-white">
-                <h3 class="font-bold text-slate-800 text-sm mb-2 border-b pb-1">Riker Sedation-Agitation Scale (เลือก 1 ข้อ)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
-                    <div class="risk-subgroup risk-high-bg border rounded p-2 space-y-1">
-                        <span class="risk-badge font-bold text-red-700 block">● High Risk</span>
-                        <div class="item-wrapper"><input type="radio" name="riker" id="riker_unarousable" value="high_1" class="riker-radio"><label for="riker_unarousable"> Unarousable</label></div>
-                        <div class="item-wrapper"><input type="radio" name="riker" id="riker_very_agitated" value="high_2" class="riker-radio"><label for="riker_very_agitated"> Very agitated</label></div>
-                        <div class="item-wrapper"><input type="radio" name="riker" id="riker_dangerous" value="high_3" class="riker-radio"><label for="riker_dangerous"> Dangerous agitation</label></div>
-                    </div>
-                    <div class="risk-subgroup risk-low-bg border rounded p-2 space-y-1">
-                        <span class="risk-badge font-bold text-orange-700 block">● Low Risk</span>
-                        <div class="item-wrapper"><input type="radio" name="riker" id="riker_vsedated" value="low_1" class="riker-radio"><label for="riker_vsedated"> Very sedated</label></div>
-                        <div class="item-wrapper"><input type="radio" name="riker" id="riker_sedated" value="low_2" class="riker-radio"><label for="riker_sedated"> Sedated</label></div>
-                        <div class="item-wrapper"><input type="radio" name="riker" id="riker_agitated" value="low_3" class="riker-radio"><label for="riker_agitated"> Agitated</label></div>
-                    </div>
-                    <div class="risk-subgroup risk-none-bg border rounded p-2 space-y-1">
-                        <span class="risk-badge font-bold text-green-700 block">● No Risk</span>
-                        <div class="item-wrapper"><input type="radio" name="riker" id="riker_calm" value="none" class="riker-radio"><label for="riker_calm"> Calm and cooperative</label></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Clinical Risk -->
-            <div class="category-block border rounded-lg p-3 bg-white">
-                <h3 class="font-bold text-slate-800 text-sm mb-2 border-b pb-1">Clinical Risk Assessment</h3>
-                <div class="space-y-2 text-xs">
-                    <div class="risk-subgroup risk-high-bg border rounded p-2">
-                        <span class="risk-badge font-bold text-red-700 block mb-1">● High Risk</span>
-                        <div class="space-y-1">
-                            <div class="item-wrapper flex items-center gap-2">
-                                <input type="checkbox" id="clin_unstable" class="clin-chk" data-equip="cardiac_risk">
-                                <label for="clin_unstable" class="font-medium">Unstable Patient (Post arrest, STEMI, on IABP/ECMO, thoracotomy etc.)</label>
-                            </div>
-                            <div class="item-wrapper flex items-center gap-2">
-                                <input type="checkbox" id="clin_need_rn" class="clin-chk">
-                                <label for="clin_need_rn">Risk to need RN</label>
-                                <span>ระบุเหตุผล: <input type="text" id="reason_rn" class="border rounded px-1 w-48 h-5 text-xs"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="risk-subgroup risk-low-bg border rounded p-2">
-                        <span class="risk-badge font-bold text-orange-700 block mb-1">● Low Risk</span>
-                        <div class="item-wrapper flex items-center gap-2">
-                            <input type="checkbox" id="clin_need_pn" class="clin-chk">
-                            <label for="clin_need_pn">Risk to need PN</label>
-                            <span>ระบุเหตุผล: <input type="text" id="reason_pn" class="border rounded px-1 w-48 h-5 text-xs"></span>
-                        </div>
-                    </div>
-                </div>
+            <!-- Action Buttons -->
+            <div class="mt-6 flex flex-col sm:flex-row gap-3 no-print">
+                <button type="button" onclick="handleSaveAndPrint('save')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow transition text-center">
+                    💾 บันทึกข้อมูล (Save)
+                </button>
+                <button type="button" onclick="handleSaveAndPrint('print')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg shadow transition text-center">
+                    🖨️ บันทึกและพิมพ์ (Save & Print)
+                </button>
             </div>
         </form>
-
-        <!-- 3. Escort Team & Processing Results -->
-        <div class="mt-6 bg-slate-800 text-white p-4 rounded-xl shadow-md print-clean print-tight">
-            <h2 class="text-base font-bold text-yellow-400 border-b border-slate-700 pb-1 mb-3">3. ผลการประมวลผล Escort Team</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-center text-xs mb-3 no-print">
-                <div class="bg-slate-700 p-2 rounded">
-                    <div class="text-slate-400">Clinical Risk:</div>
-                    <div id="res_clinical" class="font-bold text-white text-sm">Porter</div>
-                </div>
-                <div class="bg-slate-700 p-2 rounded">
-                    <div class="text-slate-400">Checklist Count:</div>
-                    <div id="res_checklist" class="font-bold text-white text-sm">Porter</div>
-                </div>
-                <div class="bg-slate-700 p-2 rounded">
-                    <div class="text-slate-400">Riker Scale:</div>
-                    <div id="res_riker" class="font-bold text-white text-sm">Porter</div>
-                </div>
-                <div class="bg-slate-700 p-2 rounded border border-yellow-500">
-                    <div class="text-yellow-400 font-semibold">High / Low Count:</div>
-                    <div id="res_counts" class="font-bold text-yellow-300 text-sm">High: 0 | Low: 0</div>
-                </div>
-            </div>
-            
-            <div class="bg-slate-900 border-2 border-yellow-400 rounded-lg p-3 text-center">
-                <span class="text-xs text-slate-400 block uppercase tracking-wide">สรุปทีมลำเลียงที่ต้องการ (Final Escort Team Requirement)</span>
-                <span id="final_escort" class="text-2xl font-extrabold text-yellow-300 my-1 block">Porter</span>
-            </div>
-        </div>
-
-        <!-- Part 4: Equipment Needed -->
-        <div class="mt-6 bg-blue-50 border border-blue-200 p-4 rounded-xl print-clean print-tight">
-            <h2 class="text-base font-bold text-blue-900 border-b border-blue-200 pb-1 mb-2">4. อุปกรณ์ที่จำเป็นในการเคลื่อนย้าย (Equipment Needed)</h2>
-            <div id="equipment_list" class="flex flex-wrap gap-2 text-xs">
-                <span class="text-slate-500 italic">ไม่มีอุปกรณ์เพิ่มเติมที่จำเป็นพิเศษ</span>
-            </div>
-        </div>
-
-        <!-- Part 5: Oxygen Supply Calculation -->
-        <div class="mt-6 bg-emerald-50 border border-emerald-200 p-4 rounded-xl print-clean print-tight">
-            <h2 class="text-base font-bold text-emerald-900 border-b border-emerald-200 pb-1 mb-2">5. การคำนวณการใช้ออกซิเจน (Oxygen Calculation)</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-3">
-                <!-- Tank Data -->
-                <div class="bg-white p-2.5 rounded border border-emerald-200 space-y-2">
-                    <h3 class="font-bold text-emerald-800">ข้อมูลถังออกซิเจน (Tank Info)</h3>
-                    <div class="flex items-center justify-between gap-2">
-                        <label>แรงดันถัง (PSI):</label>
-                        <input type="number" id="o2_psi" class="border rounded px-2 py-1 w-24 text-right" placeholder="เช่น 1500" value="1500">
-                    </div>
-                    <div class="flex items-center justify-between gap-2">
-                        <label>ปริมาตรถัง Water Capacity (L):</label>
-                        <input type="number" id="o2_vol" class="border rounded px-2 py-1 w-24 text-right" placeholder="เช่น 4.7" value="4.7">
-                    </div>
-                    <div class="text-right text-emerald-700 font-semibold pt-1 border-t">
-                        ปริมาณ O2 ในถัง: <span id="o2_available_vol">0</span> ลิตร
-                    </div>
-                </div>
-
-                <!-- Usage Data -->
-                <div class="bg-white p-2.5 rounded border border-emerald-200 space-y-2">
-                    <h3 class="font-bold text-emerald-800">ปริมาณ O2 ที่ใช้ (Oxygen Demand)</h3>
-                    
-                    <!-- 1. HFNC -->
-                    <div class="border-b pb-1">
-                        <span class="font-semibold text-slate-700 block">1) HFNC Mode:</span>
-                        <div class="flex gap-2 items-center mt-1">
-                            Flow: <input type="number" id="hfnc_flow" class="border rounded px-1 w-16 text-right h-6" placeholder="0"> LPM
-                            FiO2: <input type="number" step="0.01" id="hfnc_fio2" class="border rounded px-1 w-16 text-right h-6" placeholder="0.21">
-                        </div>
-                    </div>
-
-                    <!-- 2. Standard O2 / Vent -->
-                    <div>
-                        <span class="font-semibold text-slate-700 block">2) Oxygen support / Vent Mode:</span>
-                        <div class="flex gap-2 items-center mt-1">
-                            Flow / O2 Need: <input type="number" id="std_o2_flow" class="border rounded px-1 w-16 text-right h-6" placeholder="0"> LPM
-                        </div>
-                    </div>
-
-                    <div class="text-right text-emerald-700 font-semibold pt-1 border-t">
-                        รวมอัตราใช้ออกซิเจน: <span id="o2_total_lpm">0</span> LPM
-                    </div>
-                </div>
-            </div>
-
-            <!-- Result Calculation -->
-            <div class="bg-emerald-800 text-white p-3 rounded-lg flex justify-between items-center">
-                <div>
-                    <span class="text-xs text-emerald-200 block">ระยะเวลาที่สามารถใช้ออกซิเจนได้ทั้งหมด (Total Duration)</span>
-                    <span class="text-xs text-emerald-300 italic">*คำนวณจากสูตร: ((PSI - 200) × ปริมาตรถัง) / 14.7</span>
-                </div>
-                <div class="text-right">
-                    <span id="o2_duration_result" class="text-2xl font-bold text-yellow-300">0</span>
-                    <span class="text-sm font-normal"> นาที</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Action Buttons (Print & Save PDF) -->
-        <div class="mt-8 flex flex-wrap justify-center gap-4 no-print">
-            <!-- Save PDF Button -->
-            <button onclick="handleExportPDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                บันทึกเป็นไฟล์ PDF (Save PDF)
-            </button>
-
-            <!-- Print Button -->
-            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                พิมพ์รายงาน (Print)
-            </button>
-        </div>
-
     </div>
 
+    <!-- Script Section -->
     <script>
-        // Set default Local Time into Datetime picker
-        window.addEventListener('DOMContentLoaded', () => {
+        // Web App URL จาก Google Apps Script
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySbWokTe5TUZZaFCr5IhROt6789N4d9cy9BdwnmKWQHKwIHdbfMZk9zbxAcUzAJ4MG/exec';
+
+        // คำนวณความเสี่ยงและทีมนำส่งอัตโนมัติ
+        function calculateRisk() {
+            const spo2 = parseFloat(document.getElementById('o2_psi').value);
+            const gcs = parseFloat(document.getElementById('gcs_score').value);
+            const o2Support = document.getElementById('o2_support').value;
+            const vasoactive = document.getElementById('vasoactive').value;
+
+            let highRiskCount = 0;
+            let moderateRiskCount = 0;
+
+            // ตรวจสอบเงื่อนไข High Risk
+            if (spo2 && spo2 < 92) highRiskCount++;
+            if (gcs && gcs <= 8) highRiskCount++;
+            if (o2Support === 'high') highRiskCount++;
+            if (vasoactive === 'multiple') highRiskCount++;
+
+            // ตรวจสอบเงื่อนไข Moderate Risk
+            if (spo2 && spo2 >= 92 && spo2 <= 95) moderateRiskCount++;
+            if (gcs && gcs >= 9 && gcs <= 12) moderateRiskCount++;
+            if (o2Support === 'low') moderateRiskCount++;
+            if (vasoactive === 'single') moderateRiskCount++;
+
+            // ประเมินบุคลากรนำส่ง
+            let escortText = "";
+            if (highRiskCount > 0) {
+                escortText = "🔴 แพทย์ + พยาบาลวิกฤต (Critical Care Team)";
+            } else if (moderateRiskCount > 0) {
+                escortText = "🟡 พยาบาลวิชาชีพ (Registered Nurse)";
+            } else {
+                escortText = "🟢 พนักงานช่วยเหลือผู้ป่วย / พยาบาล (Basic Escort)";
+            }
+
+            document.getElementById('final_escort').innerText = escortText;
+            document.getElementById('res_counts').innerText = `ความเสี่ยงสูง (High Risk): ${highRiskCount} รายการ | ความเสี่ยงปานกลาง (Moderate Risk): ${moderateRiskCount} รายการ`;
+        }
+
+        // ส่งข้อมูลไปยัง Google Apps Script
+        async function sendDataToGoogleSheet() {
+            const payload = {
+                timestamp: new Date().toLocaleString('th-TH'),
+                patientName: document.getElementById('patientName')?.value || '',
+                patientAge: document.getElementById('patientAge')?.value || '',
+                fromWard: document.getElementById('fromWard')?.value || '',
+                toWard: document.getElementById('toWard')?.value || '',
+                assessDateTime: document.getElementById('assessDateTime')?.value || '',
+                assessorName: document.getElementById('assessorName')?.value || '',
+                finalEscort: document.getElementById('final_escort')?.innerText || '',
+                counts: document.getElementById('res_counts')?.innerText || ''
+            };
+
+            try {
+                // ใช้ mode: 'no-cors' เพื่อข้ามปัญหา CORS ของ Google Apps Script
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                return true;
+            } catch (err) {
+                console.error('Error saving data:', err);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อเพื่อบันทึกข้อมูล');
+                return false;
+            }
+        }
+
+        // จัดการการกดปุ่ม Save / Print
+        async function handleSaveAndPrint(action) {
+            const btn = event.currentTarget;
+            const originalText = btn.innerText;
+            btn.innerText = 'กำลังบันทึกข้อมูล...';
+            btn.disabled = true;
+
+            const success = await sendDataToGoogleSheet();
+            
+            btn.innerText = originalText;
+            btn.disabled = false;
+
+            if (success) {
+                if (action === 'print') {
+                    window.print();
+                } else {
+                    alert('บันทึกข้อมูลเรียบร้อยแล้ว');
+                }
+            }
+        }
+
+        // ตั้งค่า datetime-local เป็นปัจจุบันโดยอัตโนมัติ
+        document.addEventListener('DOMContentLoaded', () => {
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('assessDateTime').value = now.toISOString().slice(0,16);
-            calculateAll();
+            document.getElementById('assessDateTime').value = now.toISOString().slice(0, 16);
         });
-
-        // Listen for changes
-        document.querySelectorAll('input, select').forEach(element => {
-            element.addEventListener('input', calculateAll);
-            element.addEventListener('change', calculateAll);
-        });
-
-        // Priority Hierarchy Mapping for Escort Team
-        const ESCORT_PRIORITY = {
-            'Doctor+RN': 5,
-            'RN+PN': 4,
-            'RN': 3,
-            'PN': 2,
-            'Porter': 1
-        };
-
-        function calculateAll() {
-            // 1. Calculate Checklist Counts
-            const highCount = document.querySelectorAll('.chk-high:checked').length;
-            const lowCount = document.querySelectorAll('.chk-low:checked').length;
-            document.getElementById('res_counts').innerText = `High: ${highCount} | Low: ${lowCount}`;
-
-            // 2. Logic: Checklist Result
-            let checklistResult = 'Porter';
-            if (highCount > 2) {
-                checklistResult = 'RN+PN';
-            } else if (highCount >= 1) {
-                checklistResult = 'RN';
-            } else if (lowCount >= 1) {
-                checklistResult = 'PN';
-            } else {
-                checklistResult = 'Porter';
-            }
-            document.getElementById('res_checklist').innerText = checklistResult;
-
-            // 3. Logic: Riker Scale
-            let rikerResult = 'Porter';
-            const selectedRiker = document.querySelector('input[name="riker"]:checked');
-            if (selectedRiker) {
-                const val = selectedRiker.value;
-                if (val.startsWith('high')) {
-                    rikerResult = 'RN+PN';
-                } else if (val.startsWith('low')) {
-                    rikerResult = 'RN';
-                } else {
-                    rikerResult = 'Porter';
-                }
-            }
-            document.getElementById('res_riker').innerText = rikerResult;
-
-            // 4. Logic: Clinical Risk
-            let clinicalResult = 'Porter';
-            if (document.getElementById('clin_unstable').checked) {
-                clinicalResult = 'Doctor+RN';
-            } else if (document.getElementById('clin_need_rn').checked) {
-                clinicalResult = 'RN';
-            } else if (document.getElementById('clin_need_pn').checked) {
-                clinicalResult = 'PN';
-            }
-            document.getElementById('res_clinical').innerText = clinicalResult;
-
-            // 5. Final Escort Comparison
-            const results = [checklistResult, rikerResult, clinicalResult];
-            let highestEscort = 'Porter';
-            results.forEach(res => {
-                if (ESCORT_PRIORITY[res] > ESCORT_PRIORITY[highestEscort]) {
-                    highestEscort = res;
-                }
-            });
-            document.getElementById('final_escort').innerText = highestEscort;
-
-            // 6. Processing Equipment Needed
-            updateEquipmentNeeded();
-
-            // 7. Processing Oxygen Calculation
-            calculateOxygen();
-        }
-
-        function updateEquipmentNeeded() {
-            const requiredEquipments = new Set();
-
-            // Mapping Rules for Medical Transport Equipment Need
-            if (document.getElementById('item_unstable_vs').checked || 
-                document.getElementById('item_ami_high').checked || 
-                document.getElementById('item_pacemaker').checked || 
-                document.getElementById('item_ekg_unstable').checked ||
-                document.getElementById('clin_unstable').checked) {
-                requiredEquipments.add('Defibrillator');
-                requiredEquipments.add('cardiac board');
-                requiredEquipments.add('CPR box');
-                requiredEquipments.add('Ambu-bag');
-                requiredEquipments.add('Oxygen tank');
-            }
-
-            if (document.getElementById('item_seizure').checked) {
-                requiredEquipments.add('ยากันชัก/sedative drug');
-                requiredEquipments.add('Ambu-bag');
-                requiredEquipments.add('Oral/Nasal airway');
-                requiredEquipments.add('Oxygen tank');
-                requiredEquipments.add('Suction portable');
-            }
-
-            if (document.getElementById('item_head_high').checked || document.getElementById('item_gcs_low').checked) {
-                requiredEquipments.add('Ambu-bag');
-                requiredEquipments.add('Oral/Nasal airway');
-                requiredEquipments.add('Oxygen tank');
-                requiredEquipments.add('Suction portable');
-            }
-
-            if (document.getElementById('item_vent').checked) {
-                requiredEquipments.add('Transport ventilator');
-                requiredEquipments.add('Ambu-bag');
-                requiredEquipments.add('Oxygen tank');
-                requiredEquipments.add('Suction portable');
-                requiredEquipments.add('monitor sat');
-            }
-
-            if (document.getElementById('item_ett').checked || document.getElementById('item_airway_obs').checked) {
-                requiredEquipments.add('Ambu-bag');
-                requiredEquipments.add('Oral/Nasal airway');
-                requiredEquipments.add('Suction portable');
-                requiredEquipments.add('Oxygen tank');
-            }
-
-            if (document.getElementById('item_high_alert').checked) {
-                requiredEquipments.add('ยากันชัก/sedative drug');
-            }
-
-            if (document.getElementById('item_mon_sat').checked || document.getElementById('item_cannula').checked || document.getElementById('item_mask_bag').checked) {
-                requiredEquipments.add('monitor sat');
-            }
-
-            if (document.getElementById('item_cannula').checked || document.getElementById('item_mask_bag').checked) {
-                requiredEquipments.add('Oxygen tank');
-            }
-
-            const container = document.getElementById('equipment_list');
-            container.innerHTML = '';
-
-            if (requiredEquipments.size === 0) {
-                container.innerHTML = '<span class="text-slate-500 italic">ไม่มีอุปกรณ์เพิ่มเติมที่จำเป็นพิเศษ</span>';
-            } else {
-                requiredEquipments.forEach(eq => {
-                    const badge = document.createElement('span');
-                    badge.className = 'bg-blue-600 text-white px-2.5 py-1 rounded-md font-semibold text-xs shadow-sm';
-                    badge.innerText = `✓ ${eq}`;
-                    container.appendChild(badge);
-                });
-            }
-        }
-
-        function calculateOxygen() {
-            const psi = parseFloat(document.getElementById('o2_psi').value) || 0;
-            const vol = parseFloat(document.getElementById('o2_vol').value) || 0;
-
-            // Formula: O2 Volume in Liters = ((PSI - 200) * tank capacity) / 14.7
-            let availableO2Liters = 0;
-            if (psi > 200) {
-                availableO2Liters = ((psi - 200) * vol) / 14.7;
-            }
-            document.getElementById('o2_available_vol').innerText = availableO2Liters.toFixed(1);
-
-            // Flow Rates
-            const hfncFlow = parseFloat(document.getElementById('hfnc_flow').value) || 0;
-            const hfncFiO2 = parseFloat(document.getElementById('hfnc_fio2').value) || 0;
-            
-            // Calculate HFNC Effective Pure O2 Flow if FiO2 provided, else default flow
-            let hfncO2Need = 0;
-            if (hfncFlow > 0) {
-                if (hfncFiO2 > 0.21) {
-                    hfncO2Need = hfncFlow * ((hfncFiO2 - 0.21) / 0.79);
-                } else {
-                    hfncO2Need = hfncFlow;
-                }
-            }
-
-            const stdFlow = parseFloat(document.getElementById('std_o2_flow').value) || 0;
-            const totalLpm = hfncO2Need + stdFlow;
-            document.getElementById('o2_total_lpm').innerText = totalLpm.toFixed(1);
-
-            // Duration Calculation in Minutes
-            let durationMin = 0;
-            if (totalLpm > 0 && availableO2Liters > 0) {
-                durationMin = availableO2Liters / totalLpm;
-            }
-
-            document.getElementById('o2_duration_result').innerText = Math.floor(durationMin);
-        }
-
-        // Helper function for Save to PDF
-        function handleExportPDF() {
-            alert('คำแนะนำ: ในหน้าต่างการสั่งพิมพ์ ให้เลือก Destination (ปลายทาง) เป็น "Save as PDF" หรือ "บันทึกเป็น PDF" แล้วกด Save ได้เลยครับ');
-            window.print();
-        }
-// 
-const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySbWokTe5TUZZaFCr5IhROt6789N4d9cy9BdwnmKWQHKwIHdbfMZk9zbxAcUzAJ4MG/exec';
-
-// 2. ฟังก์ชั่นรวบรวมข้อมูลและส่งไปที่ Google Sheets
-async function sendDataToGoogleSheets() {
-  // รวบรวมข้อมูล Checklist ที่ถูกเลือกทั้งหมด
-  const selectedRiskItems = [];
-  document.querySelectorAll('input[type="checkbox"]:checked, input[type="radio"]:checked').forEach(input => {
-    if (input.name !== 'rikerScale') { // ตัวอย่างกรณีแยก field
-      selectedRiskItems.push(input.value || input.id);
-    }
-  });
-
-  // โครงสร้าง Payload
-  const payload = {
-    assessmentDateTime: document.getElementById('assessmentTime').value,
-    patientName: document.getElementById('patientName').value,
-    age: document.getElementById('age').value,
-    fromWard: document.getElementById('fromWard').value,
-    toWard: document.getElementById('toWard').value,
-    assessor: document.getElementById('assessorName').value,
-    escortTeam: currentCalculatedEscortTeam, // ตัวแปรเก็บผลลัพธ์ Escort Team
-    equipmentList: currentCalculatedEquipment.join(', '), // รายการอุปกรณ์
-    o2Duration: currentCalculatedO2Minutes, // เวลา O2
-    riskItems: selectedRiskItems // รายการ Checklist
-  };
-
-  try {
-    // ส่งข้อมูลแบบ Background Request (ใช้ mode: 'no-cors' สำหรับ Google Apps Script)
-    fetch(GOOGLE_APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
-    console.log('Data sent to Google Sheets successfully.');
-  } catch (error) {
-    console.error('Error sending data to Google Sheets:', error);
-  }
-}
-
-// 3. ฟังก์ชั่นที่ผูกกับปุ่ม Print / Save PDF
-function handlePrintAction(isPdfMode = true) {
-  // ส่งข้อมูลเข้า Database เบื้องหลังทันที
-  sendDataToGoogleSheets();
-
-  // แจ้งเตือนเรื่องการบันทึก PDF (ถ้ากดปุ่ม PDF)
-  if (isPdfMode) {
-    alert('ระบบกำลังเปิดหน้าต่างพิมพ์ กรุณาเลือก Destination/เครื่องพิมพ์ เป็น "Save as PDF" หรือ "บันทึกเป็น PDF"');
-  }
-
-  // เรียกคำสั่งพิมพ์ของ Browser
-  window.print();
-}
     </script>
 </body>
 </html>

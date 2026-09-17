@@ -45,7 +45,6 @@
                 padding: 4px !important;
                 margin-bottom: 6px !important;
             }
-            /* ซ่อน input แบบกล่อง แล้วแสดงเป็นข้อความธรรมดา */
             input[type="text"], input[type="number"], select, textarea {
                 border: none !important;
                 border-bottom: 1px solid #666 !important;
@@ -54,24 +53,20 @@
                 padding: 0 !important;
                 box-shadow: none !important;
             }
-            /* ซ่อน Checkbox / Radio ที่ไม่ได้เลือก */
             input[type="checkbox"]:not(:checked),
             input[type="radio"]:not(:checked) {
                 display: none !important;
             }
-            /* ซ่อน Label ของ Checkbox/Radio ที่ไม่ได้เลือก */
             .item-wrapper:has(input[type="checkbox"]:not(:checked)),
             .item-wrapper:has(input[type="radio"]:not(:checked)) {
                 display: none !important;
             }
-            /* ซ่อน Category/Group ที่ไม่มี item ถูกเลือก */
             .category-block:not(:has(input:checked)) {
                 display: none !important;
             }
             .risk-subgroup:not(:has(input:checked)) {
                 display: none !important;
             }
-            /* ซ่อนแถบสี/ป้ายชื่อกลุ่มความเสี่ยงเวลากดพิมพ์ */
             .risk-badge {
                 display: none !important;
             }
@@ -110,10 +105,14 @@
         <!-- 1. Patient Information & Assessment Time -->
         <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6 print-tight">
             <h2 class="text-base font-bold text-slate-700 mb-2 border-b pb-1">1. ข้อมูลผู้ป่วยและเวลาประเมิน (Patient Information)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อ-นามสกุล:</label>
+                    <input type="text" id="patientName" class="w-full px-2.5 py-1.5 border rounded border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุชื่อ-นามสกุล">
+                </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อ-นามสกุล / HN:</label>
-                    <input type="text" id="patientName" class="w-full px-2.5 py-1.5 border rounded border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุชื่อ หรือ HN">
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">HN:</label>
+                    <input type="text" id="patientHN" class="w-full px-2.5 py-1.5 border rounded border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุ HN">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">อายุ (ปี):</label>
@@ -202,8 +201,8 @@
                                 <label for="item_icd" class="font-medium">On ICD</label>
                             </div>
                             <div class="pl-6 space-y-1 text-slate-600">
-                                <div>1) Side: <input type="text" class="border rounded px-1 w-20 h-5 text-xs"> Depth: <input type="text" class="border rounded px-1 w-20 h-5 text-xs"></div>
-                                <div>2) Side: <input type="text" class="border rounded px-1 w-20 h-5 text-xs"> Depth: <input type="text" class="border rounded px-1 w-20 h-5 text-xs"></div>
+                                <div>1) Side: <input type="text" id="icd_side_1" class="border rounded px-1 w-20 h-5 text-xs"> Depth: <input type="text" id="icd_depth_1" class="border rounded px-1 w-20 h-5 text-xs"></div>
+                                <div>2) Side: <input type="text" id="icd_side_2" class="border rounded px-1 w-20 h-5 text-xs"> Depth: <input type="text" id="icd_depth_2" class="border rounded px-1 w-20 h-5 text-xs"></div>
                             </div>
                         </div>
                         <div class="item-wrapper flex items-center gap-2">
@@ -223,12 +222,12 @@
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_mask_bag" class="chk-low" data-equip="mask_bag">
                             <label for="item_mask_bag">Mask c bag</label>
-                            <span>Flow: <input type="text" class="border rounded px-1 w-16 h-5 text-xs"> LPM</span>
+                            <span>Flow: <input type="text" id="mask_bag_flow" class="border rounded px-1 w-16 h-5 text-xs"> LPM</span>
                         </div>
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_cannula" class="chk-low" data-equip="cannula">
                             <label for="item_cannula">Cannula</label>
-                            <span>Flow: <input type="text" class="border rounded px-1 w-16 h-5 text-xs"> LPM</span>
+                            <span>Flow: <input type="text" id="cannula_flow" class="border rounded px-1 w-16 h-5 text-xs"> LPM</span>
                         </div>
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_mon_sat" class="chk-low" data-equip="mon_sat">
@@ -256,7 +255,7 @@
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_cvc" class="chk-high">
                             <label for="item_cvc">Active central venous cath / Intraosseous</label>
-                            <span>Depth: <input type="text" class="border rounded px-1 w-16 h-5 text-xs"></span>
+                            <span>Depth: <input type="text" id="cvc_depth" class="border rounded px-1 w-16 h-5 text-xs"></span>
                         </div>
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_unstable_vs" class="chk-high" data-equip="cardiac_risk">
@@ -549,7 +548,7 @@
         <!-- Action Buttons (Print & Save PDF) -->
         <div class="mt-8 flex flex-wrap justify-center gap-4 no-print">
             <!-- Save PDF Button -->
-            <button onclick="handleExportPDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
+            <button id="btnSavePdf" onclick="handleExportPDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -557,7 +556,7 @@
             </button>
 
             <!-- Print Button -->
-            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
+            <button id="btnPrint" onclick="handlePrint()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
@@ -568,7 +567,9 @@
     </div>
 
     <script>
-        // Set default Local Time into Datetime picker
+        // *** วาง URL ของ Web App จาก Google Apps Script ที่นี่ ***
+        const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
         window.addEventListener('DOMContentLoaded', () => {
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -576,13 +577,11 @@
             calculateAll();
         });
 
-        // Listen for changes
         document.querySelectorAll('input, select').forEach(element => {
             element.addEventListener('input', calculateAll);
             element.addEventListener('change', calculateAll);
         });
 
-        // Priority Hierarchy Mapping for Escort Team
         const ESCORT_PRIORITY = {
             'Doctor+RN': 5,
             'RN+PN': 4,
@@ -591,13 +590,22 @@
             'Porter': 1
         };
 
+        let calculatedResults = {
+            highCount: 0,
+            lowCount: 0,
+            checklistResult: 'Porter',
+            rikerResult: 'Porter',
+            clinicalResult: 'Porter',
+            finalEscort: 'Porter',
+            equipments: [],
+            o2Duration: 0
+        };
+
         function calculateAll() {
-            // 1. Calculate Checklist Counts
             const highCount = document.querySelectorAll('.chk-high:checked').length;
             const lowCount = document.querySelectorAll('.chk-low:checked').length;
             document.getElementById('res_counts').innerText = `High: ${highCount} | Low: ${lowCount}`;
 
-            // 2. Logic: Checklist Result
             let checklistResult = 'Porter';
             if (highCount > 2) {
                 checklistResult = 'RN+PN';
@@ -610,7 +618,6 @@
             }
             document.getElementById('res_checklist').innerText = checklistResult;
 
-            // 3. Logic: Riker Scale
             let rikerResult = 'Porter';
             const selectedRiker = document.querySelector('input[name="riker"]:checked');
             if (selectedRiker) {
@@ -625,7 +632,6 @@
             }
             document.getElementById('res_riker').innerText = rikerResult;
 
-            // 4. Logic: Clinical Risk
             let clinicalResult = 'Porter';
             if (document.getElementById('clin_unstable').checked) {
                 clinicalResult = 'Doctor+RN';
@@ -636,7 +642,6 @@
             }
             document.getElementById('res_clinical').innerText = clinicalResult;
 
-            // 5. Final Escort Comparison
             const results = [checklistResult, rikerResult, clinicalResult];
             let highestEscort = 'Porter';
             results.forEach(res => {
@@ -646,17 +651,24 @@
             });
             document.getElementById('final_escort').innerText = highestEscort;
 
-            // 6. Processing Equipment Needed
-            updateEquipmentNeeded();
+            const equipments = updateEquipmentNeeded();
+            const o2Duration = calculateOxygen();
 
-            // 7. Processing Oxygen Calculation
-            calculateOxygen();
+            calculatedResults = {
+                highCount,
+                lowCount,
+                checklistResult,
+                rikerResult,
+                clinicalResult,
+                finalEscort: highestEscort,
+                equipments,
+                o2Duration
+            };
         }
 
         function updateEquipmentNeeded() {
             const requiredEquipments = new Set();
 
-            // Mapping Rules for Medical Transport Equipment Need
             if (document.getElementById('item_unstable_vs').checked || 
                 document.getElementById('item_ami_high').checked || 
                 document.getElementById('item_pacemaker').checked || 
@@ -714,34 +726,33 @@
             const container = document.getElementById('equipment_list');
             container.innerHTML = '';
 
-            if (requiredEquipments.size === 0) {
+            const equipArray = Array.from(requiredEquipments);
+            if (equipArray.length === 0) {
                 container.innerHTML = '<span class="text-slate-500 italic">ไม่มีอุปกรณ์เพิ่มเติมที่จำเป็นพิเศษ</span>';
             } else {
-                requiredEquipments.forEach(eq => {
+                equipArray.forEach(eq => {
                     const badge = document.createElement('span');
                     badge.className = 'bg-blue-600 text-white px-2.5 py-1 rounded-md font-semibold text-xs shadow-sm';
                     badge.innerText = `✓ ${eq}`;
                     container.appendChild(badge);
                 });
             }
+            return equipArray;
         }
 
         function calculateOxygen() {
             const psi = parseFloat(document.getElementById('o2_psi').value) || 0;
             const vol = parseFloat(document.getElementById('o2_vol').value) || 0;
 
-            // Formula: O2 Volume in Liters = ((PSI - 200) * tank capacity) / 14.7
             let availableO2Liters = 0;
             if (psi > 200) {
                 availableO2Liters = ((psi - 200) * vol) / 14.7;
             }
             document.getElementById('o2_available_vol').innerText = availableO2Liters.toFixed(1);
 
-            // Flow Rates
             const hfncFlow = parseFloat(document.getElementById('hfnc_flow').value) || 0;
             const hfncFiO2 = parseFloat(document.getElementById('hfnc_fio2').value) || 0;
             
-            // Calculate HFNC Effective Pure O2 Flow if FiO2 provided, else default flow
             let hfncO2Need = 0;
             if (hfncFlow > 0) {
                 if (hfncFiO2 > 0.21) {
@@ -755,70 +766,74 @@
             const totalLpm = hfncO2Need + stdFlow;
             document.getElementById('o2_total_lpm').innerText = totalLpm.toFixed(1);
 
-            // Duration Calculation in Minutes
             let durationMin = 0;
             if (totalLpm > 0 && availableO2Liters > 0) {
                 durationMin = availableO2Liters / totalLpm;
             }
 
-            document.getElementById('o2_duration_result').innerText = Math.floor(durationMin);
+            const finalMin = Math.floor(durationMin);
+            document.getElementById('o2_duration_result').innerText = finalMin;
+            return finalMin;
         }
 
-        // Helper function for Save to PDF
-        function handleExportPDF() {
+        // *** บันทึกข้อมูลไปยัง Google Sheets ***
+        async function saveDataToGoogleSheet(actionType) {
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbyV_dUkSvUvFg20DFuIR0uHXkN0zPKjNWBKIxHmcwny49o9f5cCvUpbu73LswxXqgKu/exec") {
+                console.warn("ยังไม่ได้ตั้งค่า GOOGLE_SCRIPT_URL ข้อมูลจะไม่ถูกบันทึก");
+                return;
+            }
+
+            // รวบรวมข้อมูล Checklist ที่ถูกเลือกทั้งหมด
+            const checkedItems = [];
+            document.querySelectorAll('#assessmentForm input[type="checkbox"]:checked').forEach(chk => {
+                const label = document.querySelector(`label[for="${chk.id}"]`);
+                if (label) checkedItems.push(label.innerText.trim());
+            });
+
+            const payload = {
+                action_type: actionType,
+                patient_name: document.getElementById('patientName').value,
+                patient_hn: document.getElementById('patientHN').value,
+                patient_age: document.getElementById('patientAge').value,
+                assess_date_time: document.getElementById('assessDateTime').value,
+                from_ward: document.getElementById('fromWard').value,
+                to_ward: document.getElementById('toWard').value,
+                assessor_name: document.getElementById('assessorName').value,
+                high_count: calculatedResults.highCount,
+                low_count: calculatedResults.lowCount,
+                res_clinical: calculatedResults.clinicalResult,
+                res_checklist: calculatedResults.checklistResult,
+                res_riker: calculatedResults.rikerResult,
+                final_escort: calculatedResults.finalEscort,
+                equipment_needed: calculatedResults.equipments.join(', '),
+                o2_duration_min: calculatedResults.o2Duration,
+                checked_items: checkedItems.join('; ')
+            };
+
+            try {
+                // ส่งข้อมูลด้วย mode: 'no-cors' เพื่อป้องกันปัญหา CORS กับ Apps Script
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                console.log('บันทึกข้อมูลเรียบร้อยแล้ว');
+            } catch (err) {
+                console.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล:', err);
+            }
+        }
+
+        async function handleExportPDF() {
+            await saveDataToGoogleSheet('Save PDF');
             alert('คำแนะนำ: ในหน้าต่างการสั่งพิมพ์ ให้เลือก Destination (ปลายทาง) เป็น "Save as PDF" หรือ "บันทึกเป็น PDF" แล้วกด Save ได้เลยครับ');
             window.print();
         }
-        <script>
-  // Function กวาดข้อมูลอัตโนมัติ
-  function collectData() {
-    const data = {
-      timestamp: new Date().toISOString()
-    };
-    
-    const inputs = document.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-      const key = input.id || input.name || input.placeholder || 'unnamed_field';
-      
-      if (key && input.type !== 'submit' && input.type !== 'button') {
-        if (input.type === 'checkbox' || input.type === 'radio') {
-          if (input.checked) {
-            data[key] = input.value;
-          }
-        } else {
-          data[key] = input.value;
+
+        async function handlePrint() {
+            await saveDataToGoogleSheet('Print');
+            window.print();
         }
-      }
-    });
-
-    return data;
-  }
-
-  // Function ส่งข้อมูลไป Google Sheets
-  function sendDataToOwner(data) {
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyQe0CGuru7FSz2E50rjIFKHI86K3K_kpg8kBpvyX5FQSHYuzoYo3YflkVOpuFA86I_/exec';
-    
-    fetch(scriptURL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    }).catch(error => console.error('Error!', error.message));
-  }
-
-  // 1. ดักจับการกดพิมพ์ (Print)
-  window.onbeforeprint = function() {
-    const data = collectData();
-    data.action = 'PRINT';
-    sendDataToOwner(data);
-  };
-
-  // 2. ดักจับการกดปุ่มบันทึก (ระบุ ID ให้ปุ่มว่า btn-save หรือเปลี่ยนตามปุ่มจริง)
-  document.getElementById('handleExportPDF')?.addEventListener('click', function() {
-    const data = collectData();
-    data.action = 'SAVE';
-    sendDataToOwner(data);
-  });
     </script>
 </body>
 </html>

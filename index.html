@@ -778,7 +778,7 @@
 
         // *** บันทึกข้อมูลไปยัง Google Sheets ***
         async function saveDataToGoogleSheet(actionType) {
-            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypY-YsSEZAfyR898EBG7EBHlE4JrSVQknaoCxHxj-ruIP4LO9wqi35lkD8yzqiX2QG/exec") {
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbypY-YsSEZAfyR898EBG7EBHlE4JrSVQknaoCxHxj-ruIP4LO9wqi35lkD8yzqiX2QG/exec") {
                 console.warn("ยังไม่ได้ตั้งค่า GOOGLE_SCRIPT_URL ข้อมูลจะไม่ถูกบันทึก");
                 return;
             }

@@ -874,6 +874,75 @@ window.addEventListener("keydown", (e) => {
   }
 });
 </script>
+<!-- ปุ่มกดบันทึกข้อมูล -->
+<div class="mt-6 text-center no-print">
+    <button type="button" onclick="submitAssessmentData()" id="btnSubmit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg text-base transition-all">
+        💾 บันทึกข้อมูลเข้า Google Sheet
+    </button>
+</div>
 
+<script>
+  // ⚠️ นำ Web App URL ที่ได้จากการ Deploy ใน Apps Script มาวางตรงนี้
+  const SCRIPT_URL = "YOUR_WEB_APP_URL_HERE";
+
+  function submitAssessmentData() {
+    const btn = document.getElementById("btnSubmit");
+    btn.disabled = true;
+    btn.innerText = "⏳ กำลังบันทึกข้อมูล...";
+
+    // 1. ดึงข้อมูลพื้นฐานจาก Input Text / Number / DateTime
+    const formData = {
+      patientName: document.getElementById("patientName")?.value || "",
+      patientHN: document.getElementById("patientHN")?.value || "",
+      patientAge: document.getElementById("patientAge")?.value || "",
+      assessDateTime: document.getElementById("assessDateTime")?.value || "",
+      fromWard: document.getElementById("fromWard")?.value || "",
+      toWard: document.getElementById("toWard")?.value || "",
+      assessorName: document.getElementById("assessorName")?.value || "",
+      ettSize: document.getElementById("ett_size")?.value || "",
+      ettDepth: document.getElementById("ett_depth")?.value || "",
+      airwaySize: document.getElementById("airway_size")?.value || "",
+      ventSetting: document.getElementById("vent_setting")?.value || "",
+      reasonRN: document.getElementById("reason_rn")?.value || "",
+      reasonPN: document.getElementById("reason_pn")?.value || "",
+      finalEscort: document.getElementById("final_escort")?.innerText || ""
+    };
+
+    // 2. ดึงค่า Radio Button (Riker Scale)
+    const selectedRiker = document.querySelector('input[name="riker"]:checked');
+    formData["rikerScale"] = selectedRiker ? selectedRiker.id : "ไม่ได้เลือก";
+
+    // 3. วนลูปดึง Checkbox ทุกตัวในฟอร์มแบบอัตโนมัติ
+    const checkboxes = document.querySelectorAll('#assessmentForm input[type="checkbox"]');
+    checkboxes.forEach(chk => {
+      // ใช้ id หรือ label ในการระบุชื่อคอลัมน์
+      const chkKey = chk.id || chk.name;
+      if (chkKey) {
+        formData[chkKey] = chk.checked ? "TRUE" : "FALSE";
+      }
+    });
+
+    // 4. ส่งข้อมูลไปยัง Google Apps Script
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(formData)
+    })
+    .then(() => {
+      alert("✅ บันทึกข้อมูลเข้า Google Sheet เรียบร้อยแล้ว!");
+      btn.disabled = false;
+      btn.innerText = "💾 บันทึกข้อมูลเข้า Google Sheet";
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("❌ เกิดข้อผิดพลาดในการส่งข้อมูล");
+      btn.disabled = false;
+      btn.innerText = "💾 บันทึกข้อมูลเข้า Google Sheet";
+    });
+  }
+</script>
 </body>
 </html>

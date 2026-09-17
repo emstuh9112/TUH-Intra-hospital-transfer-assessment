@@ -45,6 +45,7 @@
                 padding: 4px !important;
                 margin-bottom: 6px !important;
             }
+            /* ซ่อน input แบบกล่อง แล้วแสดงเป็นข้อความธรรมดา */
             input[type="text"], input[type="number"], select, textarea {
                 border: none !important;
                 border-bottom: 1px solid #666 !important;
@@ -53,20 +54,24 @@
                 padding: 0 !important;
                 box-shadow: none !important;
             }
+            /* ซ่อน Checkbox / Radio ที่ไม่ได้เลือก */
             input[type="checkbox"]:not(:checked),
             input[type="radio"]:not(:checked) {
                 display: none !important;
             }
+            /* ซ่อน Label ของ Checkbox/Radio ที่ไม่ได้เลือก */
             .item-wrapper:has(input[type="checkbox"]:not(:checked)),
             .item-wrapper:has(input[type="radio"]:not(:checked)) {
                 display: none !important;
             }
+            /* ซ่อน Category/Group ที่ไม่มี item ถูกเลือก */
             .category-block:not(:has(input:checked)) {
                 display: none !important;
             }
             .risk-subgroup:not(:has(input:checked)) {
                 display: none !important;
             }
+            /* ซ่อนแถบสี/ป้ายชื่อกลุ่มความเสี่ยงเวลากดพิมพ์ */
             .risk-badge {
                 display: none !important;
             }
@@ -201,8 +206,8 @@
                                 <label for="item_icd" class="font-medium">On ICD</label>
                             </div>
                             <div class="pl-6 space-y-1 text-slate-600">
-                                <div>1) Side: <input type="text" id="icd_side_1" class="border rounded px-1 w-20 h-5 text-xs"> Depth: <input type="text" id="icd_depth_1" class="border rounded px-1 w-20 h-5 text-xs"></div>
-                                <div>2) Side: <input type="text" id="icd_side_2" class="border rounded px-1 w-20 h-5 text-xs"> Depth: <input type="text" id="icd_depth_2" class="border rounded px-1 w-20 h-5 text-xs"></div>
+                                <div>1) Side: <input type="text" class="border rounded px-1 w-20 h-5 text-xs"> Depth: <input type="text" class="border rounded px-1 w-20 h-5 text-xs"></div>
+                                <div>2) Side: <input type="text" class="border rounded px-1 w-20 h-5 text-xs"> Depth: <input type="text" class="border rounded px-1 w-20 h-5 text-xs"></div>
                             </div>
                         </div>
                         <div class="item-wrapper flex items-center gap-2">
@@ -222,12 +227,12 @@
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_mask_bag" class="chk-low" data-equip="mask_bag">
                             <label for="item_mask_bag">Mask c bag</label>
-                            <span>Flow: <input type="text" id="mask_bag_flow" class="border rounded px-1 w-16 h-5 text-xs"> LPM</span>
+                            <span>Flow: <input type="text" class="border rounded px-1 w-16 h-5 text-xs"> LPM</span>
                         </div>
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_cannula" class="chk-low" data-equip="cannula">
                             <label for="item_cannula">Cannula</label>
-                            <span>Flow: <input type="text" id="cannula_flow" class="border rounded px-1 w-16 h-5 text-xs"> LPM</span>
+                            <span>Flow: <input type="text" class="border rounded px-1 w-16 h-5 text-xs"> LPM</span>
                         </div>
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_mon_sat" class="chk-low" data-equip="mon_sat">
@@ -255,7 +260,7 @@
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_cvc" class="chk-high">
                             <label for="item_cvc">Active central venous cath / Intraosseous</label>
-                            <span>Depth: <input type="text" id="cvc_depth" class="border rounded px-1 w-16 h-5 text-xs"></span>
+                            <span>Depth: <input type="text" class="border rounded px-1 w-16 h-5 text-xs"></span>
                         </div>
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_unstable_vs" class="chk-high" data-equip="cardiac_risk">
@@ -489,6 +494,7 @@
             <h2 class="text-base font-bold text-emerald-900 border-b border-emerald-200 pb-1 mb-2">5. การคำนวณการใช้ออกซิเจน (Oxygen Calculation)</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-3">
+                <!-- Tank Data -->
                 <div class="bg-white p-2.5 rounded border border-emerald-200 space-y-2">
                     <h3 class="font-bold text-emerald-800">ข้อมูลถังออกซิเจน (Tank Info)</h3>
                     <div class="flex items-center justify-between gap-2">
@@ -496,171 +502,378 @@
                         <input type="number" id="o2_psi" class="border rounded px-2 py-1 w-24 text-right" placeholder="เช่น 1500" value="1500">
                     </div>
                     <div class="flex items-center justify-between gap-2">
-                        <label>ประเภทถัง (Tank Size):</label>
-                        <select id="o2_tank_factor" class="border rounded px-2 py-1 text-xs">
-                            <option value="0.16">D Tank (Factor 0.16)</option>
-                            <option value="0.28" selected>E Tank (Factor 0.28)</option>
-                            <option value="1.56">M Tank (Factor 1.56)</option>
-                            <option value="3.14">G Tank (Factor 3.14)</option>
-                            <option value="2.41">H/K Tank (Factor 2.41)</option>
-                        </select>
+                        <label>ปริมาตรถัง Water Capacity (L):</label>
+                        <input type="number" id="o2_vol" class="border rounded px-2 py-1 w-24 text-right" placeholder="เช่น 4.7" value="4.7">
                     </div>
-                    <div class="flex items-center justify-between gap-2">
-                        <label>Flow Rate (LPM):</label>
-                        <input type="number" id="o2_flow" class="border rounded px-2 py-1 w-24 text-right" placeholder="เช่น 5" value="5">
+                    <div class="text-right text-emerald-700 font-semibold pt-1 border-t">
+                        ปริมาณ O2 ในถัง: <span id="o2_available_vol">0</span> ลิตร
                     </div>
                 </div>
 
+                <!-- Usage Data -->
                 <div class="bg-white p-2.5 rounded border border-emerald-200 space-y-2">
-                    <h3 class="font-bold text-emerald-800">เวลาที่ใช้เดินทาง (Transport Time)</h3>
-                    <div class="flex items-center justify-between gap-2">
-                        <label>เวลาเดินทางจริง (นาที):</label>
-                        <input type="number" id="o2_time" class="border rounded px-2 py-1 w-24 text-right" placeholder="เช่น 20" value="20">
+                    <h3 class="font-bold text-emerald-800">ปริมาณ O2 ที่ใช้ (Oxygen Demand)</h3>
+                    
+                    <!-- 1. HFNC -->
+                    <div class="border-b pb-1">
+                        <span class="font-semibold text-slate-700 block">1) HFNC Mode:</span>
+                        <div class="flex gap-2 items-center mt-1">
+                            Flow: <input type="number" id="hfnc_flow" class="border rounded px-1 w-16 text-right h-6" placeholder="0"> LPM
+                            FiO2: <input type="number" step="0.01" id="hfnc_fio2" class="border rounded px-1 w-16 text-right h-6" placeholder="0.21">
+                        </div>
                     </div>
-                    <div class="flex items-center justify-between gap-2">
-                        <label>Safety Margin (%):</label>
-                        <input type="number" id="o2_safety" class="border rounded px-2 py-1 w-24 text-right" value="50">
+
+                    <!-- 2. Standard O2 / Vent -->
+                    <div>
+                        <span class="font-semibold text-slate-700 block">2) Oxygen support / Vent Mode:</span>
+                        <div class="flex gap-2 items-center mt-1">
+                            Flow / O2 Need: <input type="number" id="std_o2_flow" class="border rounded px-1 w-16 text-right h-6" placeholder="0"> LPM
+                        </div>
+                    </div>
+
+                    <div class="text-right text-emerald-700 font-semibold pt-1 border-t">
+                        รวมอัตราใช้ออกซิเจน: <span id="o2_total_lpm">0</span> LPM
                     </div>
                 </div>
             </div>
 
-            <div class="bg-emerald-100 border border-emerald-300 rounded-lg p-3 flex flex-wrap justify-between items-center text-xs">
+            <!-- Result Calculation -->
+            <div class="bg-emerald-800 text-white p-3 rounded-lg flex justify-between items-center">
                 <div>
-                    <div>ปริมาณ O2 ใช้ได้คงเหลือ: <span id="o2_avail_liter" class="font-bold text-emerald-900">0</span> Liters</div>
-                    <div>เวลาที่ใช้งานถัง O2 ได้ทั้งหมด: <span id="o2_duration" class="font-bold text-emerald-900">0</span> นาที</div>
+                    <span class="text-xs text-emerald-200 block">ระยะเวลาที่สามารถใช้ออกซิเจนได้ทั้งหมด (Total Duration)</span>
+                    <span class="text-xs text-emerald-300 italic">*คำนวณจากสูตร: ((PSI - 200) × ปริมาตรถัง) / 14.7</span>
                 </div>
-                <div class="text-right border-l border-emerald-300 pl-4">
-                    <div class="text-slate-600">เวลาที่ต้องเตรียมสำรองรวม Safety Factor:</div>
-                    <div id="o2_req_time" class="text-sm font-bold text-emerald-900">0 นาที</div>
-                    <div id="o2_status" class="font-extrabold text-sm text-green-700 mt-0.5">เพียงพอ (Safe)</div>
+                <div class="text-right">
+                    <span id="o2_duration_result" class="text-2xl font-bold text-yellow-300">0</span>
+                    <span class="text-sm font-normal"> นาที</span>
                 </div>
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="mt-6 flex flex-wrap gap-3 justify-end no-print">
-            <button type="button" onclick="window.print()" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow">
-                🖨️ พิมพ์เอกสาร (Print)
+        <!-- Action Buttons (Print & Save PDF) -->
+        <div class="mt-8 flex flex-wrap justify-center gap-4 no-print">
+            <!-- Save PDF Button -->
+            <button onclick="onlineSavePDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                บันทึกเป็นไฟล์ PDF (Save PDF)
             </button>
-            <button type="button" onclick="handleExportPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow">
-                📄 ส่งออก PDF / บันทึกข้อมูล
+
+            <!-- Print Button -->
+            <button onclick="onlinePrint()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                พิมพ์รายงาน (Print)
             </button>
         </div>
 
     </div>
 
-    <!-- JavaScript Logic -->
     <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx.../exec"; // ระบุ URL ของ Apps Script ที่นี่
-
-        document.addEventListener("DOMContentLoaded", () => {
+        // Set default Local Time into Datetime picker
+        window.addEventListener('DOMContentLoaded', () => {
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById("assessDateTime").value = now.toISOString().slice(0, 16);
-
-            document.querySelectorAll("input, select").forEach(el => {
-                el.addEventListener("change", processForm);
-                el.addEventListener("input", processForm);
-            });
-
-            processForm();
+            document.getElementById('assessDateTime').value = now.toISOString().slice(0,16);
+            calculateAll();
         });
 
-        function processForm() {
-            let highCount = document.querySelectorAll(".chk-high:checked").length;
-            let lowCount = document.querySelectorAll(".chk-low:checked").length;
+        // Listen for changes
+        document.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('input', calculateAll);
+            element.addEventListener('change', calculateAll);
+        });
 
-            let resChecklist = "Porter";
-            if (highCount >= 1) resChecklist = "MD + RN";
-            else if (lowCount >= 1) resChecklist = "RN / PN";
+        // Priority Hierarchy Mapping for Escort Team
+        const ESCORT_PRIORITY = {
+            'Doctor+RN': 5,
+            'RN+PN': 4,
+            'RN': 3,
+            'PN': 2,
+            'Porter': 1
+        };
 
-            let resRiker = "Porter";
-            const rikerVal = document.querySelector('input[name="riker"]:checked')?.value;
-            if (rikerVal && rikerVal.startsWith("high")) resRiker = "MD + RN";
-            else if (rikerVal && rikerVal.startsWith("low")) resRiker = "RN / PN";
+        function calculateAll() {
+            // 1. Calculate Checklist Counts
+            const highCount = document.querySelectorAll('.chk-high:checked').length;
+            const lowCount = document.querySelectorAll('.chk-low:checked').length;
+            document.getElementById('res_counts').innerText = `High: ${highCount} | Low: ${lowCount}`;
 
-            let resClinical = "Porter";
-            if (document.getElementById("clin_unstable").checked || document.getElementById("clin_need_rn").checked) {
-                resClinical = "MD + RN";
-            } else if (document.getElementById("clin_need_pn").checked) {
-                resClinical = "RN / PN";
+            // 2. Logic: Checklist Result
+            let checklistResult = 'Porter';
+            if (highCount > 2) {
+                checklistResult = 'RN+PN';
+            } else if (highCount >= 1) {
+                checklistResult = 'RN';
+            } else if (lowCount >= 1) {
+                checklistResult = 'PN';
+            } else {
+                checklistResult = 'Porter';
             }
+            document.getElementById('res_checklist').innerText = checklistResult;
 
-            document.getElementById("res_checklist").textContent = resChecklist;
-            document.getElementById("res_riker").textContent = resRiker;
-            document.getElementById("res_clinical").textContent = resClinical;
-            document.getElementById("res_counts").textContent = `High: ${highCount} | Low: ${lowCount}`;
-
-            let finalEscort = "Porter";
-            if (resChecklist === "MD + RN" || resRiker === "MD + RN" || resClinical === "MD + RN") {
-                finalEscort = "MD + RN";
-            } else if (resChecklist === "RN / PN" || resRiker === "RN / PN" || resClinical === "RN / PN") {
-                finalEscort = "RN / PN";
+            // 3. Logic: Riker Scale
+            let rikerResult = 'Porter';
+            const selectedRiker = document.querySelector('input[name="riker"]:checked');
+            if (selectedRiker) {
+                const val = selectedRiker.value;
+                if (val.startsWith('high')) {
+                    rikerResult = 'RN+PN';
+                } else if (val.startsWith('low')) {
+                    rikerResult = 'RN';
+                } else {
+                    rikerResult = 'Porter';
+                }
             }
-            document.getElementById("final_escort").textContent = finalEscort;
+            document.getElementById('res_riker').innerText = rikerResult;
 
-            updateEquipment();
+            // 4. Logic: Clinical Risk
+            let clinicalResult = 'Porter';
+            if (document.getElementById('clin_unstable').checked) {
+                clinicalResult = 'Doctor+RN';
+            } else if (document.getElementById('clin_need_rn').checked) {
+                clinicalResult = 'RN';
+            } else if (document.getElementById('clin_need_pn').checked) {
+                clinicalResult = 'PN';
+            }
+            document.getElementById('res_clinical').innerText = clinicalResult;
+
+            // 5. Final Escort Comparison
+            const results = [checklistResult, rikerResult, clinicalResult];
+            let highestEscort = 'Porter';
+            results.forEach(res => {
+                if (ESCORT_PRIORITY[res] > ESCORT_PRIORITY[highestEscort]) {
+                    highestEscort = res;
+                }
+            });
+            document.getElementById('final_escort').innerText = highestEscort;
+
+            // 6. Processing Equipment Needed
+            updateEquipmentNeeded();
+
+            // 7. Processing Oxygen Calculation
             calculateOxygen();
         }
 
-        function updateEquipment() {
-            const listContainer = document.getElementById("equipment_list");
-            listContainer.innerHTML = "";
-            let items = [];
+        function updateEquipmentNeeded() {
+            const requiredEquipments = new Set();
 
-            if (document.getElementById("item_ett").checked) items.push("Definitive Airway (ETT/TT)");
-            if (document.getElementById("item_vent").checked) items.push("Transport Ventilator / HFNC");
-            if (document.getElementById("item_mask_bag").checked) items.push("Ambu Bag with Mask");
-            if (document.getElementById("item_mon_sat").checked || document.getElementById("item_ekg_unstable").checked) items.push("Patient Monitor (ECG/SpO2/NIBP)");
-            if (document.getElementById("item_iv_rate").checked || document.getElementById("item_pump_need").checked) items.push("Infusion / Syringe Pump");
-            if (document.getElementById("item_iabp").checked) items.push("IABP / ECMO Unit");
-            if (document.getElementById("item_lsb").checked) items.push("Long Spinal Board");
+            // Mapping Rules for Medical Transport Equipment Need
+            if (document.getElementById('item_unstable_vs').checked || 
+                document.getElementById('item_ami_high').checked || 
+                document.getElementById('item_pacemaker').checked || 
+                document.getElementById('item_ekg_unstable').checked ||
+                document.getElementById('clin_unstable').checked) {
+                requiredEquipments.add('Defibrillator');
+                requiredEquipments.add('cardiac board');
+                requiredEquipments.add('CPR box');
+                requiredEquipments.add('Ambu-bag');
+                requiredEquipments.add('Oxygen tank');
+            }
 
-            if (items.length === 0) {
-                listContainer.innerHTML = '<span class="text-slate-500 italic">ไม่มีอุปกรณ์เพิ่มเติมที่จำเป็นพิเศษ</span>';
+            if (document.getElementById('item_seizure').checked) {
+                requiredEquipments.add('ยากันชัก/sedative drug');
+                requiredEquipments.add('Ambu-bag');
+                requiredEquipments.add('Oral/Nasal airway');
+                requiredEquipments.add('Oxygen tank');
+                requiredEquipments.add('Suction portable');
+            }
+
+            if (document.getElementById('item_head_high').checked || document.getElementById('item_gcs_low').checked) {
+                requiredEquipments.add('Ambu-bag');
+                requiredEquipments.add('Oral/Nasal airway');
+                requiredEquipments.add('Oxygen tank');
+                requiredEquipments.add('Suction portable');
+            }
+
+            if (document.getElementById('item_vent').checked) {
+                requiredEquipments.add('Transport ventilator');
+                requiredEquipments.add('Ambu-bag');
+                requiredEquipments.add('Oxygen tank');
+                requiredEquipments.add('Suction portable');
+                requiredEquipments.add('monitor sat');
+            }
+
+            if (document.getElementById('item_ett').checked || document.getElementById('item_airway_obs').checked) {
+                requiredEquipments.add('Ambu-bag');
+                requiredEquipments.add('Oral/Nasal airway');
+                requiredEquipments.add('Suction portable');
+                requiredEquipments.add('Oxygen tank');
+            }
+
+            if (document.getElementById('item_high_alert').checked) {
+                requiredEquipments.add('ยากันชัก/sedative drug');
+            }
+
+            if (document.getElementById('item_mon_sat').checked || document.getElementById('item_cannula').checked || document.getElementById('item_mask_bag').checked) {
+                requiredEquipments.add('monitor sat');
+            }
+
+            if (document.getElementById('item_cannula').checked || document.getElementById('item_mask_bag').checked) {
+                requiredEquipments.add('Oxygen tank');
+            }
+
+            const container = document.getElementById('equipment_list');
+            container.innerHTML = '';
+
+            if (requiredEquipments.size === 0) {
+                container.innerHTML = '<span class="text-slate-500 italic">ไม่มีอุปกรณ์เพิ่มเติมที่จำเป็นพิเศษ</span>';
             } else {
-                items.forEach(item => {
-                    const badge = document.createElement("span");
-                    badge.className = "bg-blue-100 text-blue-800 font-semibold px-2.5 py-1 rounded-md border border-blue-300";
-                    badge.textContent = item;
-                    listContainer.appendChild(badge);
+                requiredEquipments.forEach(eq => {
+                    const badge = document.createElement('span');
+                    badge.className = 'bg-blue-600 text-white px-2.5 py-1 rounded-md font-semibold text-xs shadow-sm';
+                    badge.innerText = `✓ ${eq}`;
+                    container.appendChild(badge);
                 });
             }
         }
 
         function calculateOxygen() {
-            const psi = parseFloat(document.getElementById("o2_psi").value) || 0;
-            const factor = parseFloat(document.getElementById("o2_tank_factor").value) || 0.28;
-            const flow = parseFloat(document.getElementById("o2_flow").value) || 0;
-            const time = parseFloat(document.getElementById("o2_time").value) || 0;
-            const safetyPct = parseFloat(document.getElementById("o2_safety").value) || 50;
+            const psi = parseFloat(document.getElementById('o2_psi').value) || 0;
+            const vol = parseFloat(document.getElementById('o2_vol').value) || 0;
 
-            const safePsi = Math.max(0, psi - 200); // หัก Safety Reserve 200 PSI
-            const availLiter = safePsi * factor;
-            const duration = flow > 0 ? availLiter / flow : 0;
-
-            const reqTime = time * (1 + safetyPct / 100);
-
-            document.getElementById("o2_avail_liter").textContent = availLiter.toFixed(0);
-            document.getElementById("o2_duration").textContent = duration.toFixed(0);
-            document.getElementById("o2_req_time").textContent = `${reqTime.toFixed(0)} นาที`;
-
-            const statusEl = document.getElementById("o2_status");
-            if (flow === 0) {
-                statusEl.textContent = "ไม่ได้ใช้ออกซิเจน";
-                statusEl.className = "font-extrabold text-sm text-slate-500 mt-0.5";
-            } else if (duration >= reqTime) {
-                statusEl.textContent = "เพียงพอ (Safe)";
-                statusEl.className = "font-extrabold text-sm text-green-700 mt-0.5";
-            } else {
-                statusEl.textContent = "⚠️ ไม่เพียงพอ! ควรเปลี่ยนถัง O2";
-                statusEl.className = "font-extrabold text-sm text-red-600 mt-0.5";
+            // Formula: O2 Volume in Liters = ((PSI - 200) * tank capacity) / 14.7
+            let availableO2Liters = 0;
+            if (psi > 200) {
+                availableO2Liters = ((psi - 200) * vol) / 14.7;
             }
+            document.getElementById('o2_available_vol').innerText = availableO2Liters.toFixed(1);
+
+            // Flow Rates
+            const hfncFlow = parseFloat(document.getElementById('hfnc_flow').value) || 0;
+            const hfncFiO2 = parseFloat(document.getElementById('hfnc_fio2').value) || 0;
+            
+            // Calculate HFNC Effective Pure O2 Flow if FiO2 provided, else default flow
+            let hfncO2Need = 0;
+            if (hfncFlow > 0) {
+                if (hfncFiO2 > 0.21) {
+                    hfncO2Need = hfncFlow * ((hfncFiO2 - 0.21) / 0.79);
+                } else {
+                    hfncO2Need = hfncFlow;
+                }
+            }
+
+            const stdFlow = parseFloat(document.getElementById('std_o2_flow').value) || 0;
+            const totalLpm = hfncO2Need + stdFlow;
+            document.getElementById('o2_total_lpm').innerText = totalLpm.toFixed(1);
+
+            // Duration Calculation in Minutes
+            let durationMin = 0;
+            if (totalLpm > 0 && availableO2Liters > 0) {
+                durationMin = availableO2Liters / totalLpm;
+            }
+
+            document.getElementById('o2_duration_result').innerText = Math.floor(durationMin);
         }
 
+        // Helper function for Save to PDF
         function handleExportPDF() {
+            alert('คำแนะนำ: ในหน้าต่างการสั่งพิมพ์ ให้เลือก Destination (ปลายทาง) เป็น "Save as PDF" หรือ "บันทึกเป็น PDF" แล้วกด Save ได้เลยครับ');
             window.print();
         }
     </script>
+
+<script>
+/* ===== ONLINE DATA COLLECTION LAYER =====
+   Configure API_URL after deploying the Google Apps Script Web App.
+*/
+const ONLINE_CONFIG = {
+  API_URL: "https://script.google.com/macros/s/AKfycbyzyy_nRDLqpBv23LLWosM4N72bNvZDrzRnXDmIQvl1MmkPfGmmd_CdYaJbPvHq04IM/exec", // e.g. https://script.google.com/macros/s/XXXXXXXX/exec
+  FORM_VERSION: "PTA-Online-v1.0"
+};
+
+function collectAssessmentData(eventType="manual") {
+  const data = {
+    recordId: "PTA-" + Date.now() + "-" + Math.random().toString(36).slice(2,8).toUpperCase(),
+    savedAt: new Date().toISOString(),
+    eventType,
+    formVersion: ONLINE_CONFIG.FORM_VERSION,
+    patientName: document.getElementById("patientName")?.value || "",
+    patientHN: document.getElementById("patientHN")?.value || "",
+    patientAge: document.getElementById("patientAge")?.value || "",
+    assessDateTime: document.getElementById("assessDateTime")?.value || "",
+    fromWard: document.getElementById("fromWard")?.value || "",
+    toWard: document.getElementById("toWard")?.value || "",
+    assessorName: document.getElementById("assessorName")?.value || "",
+    finalEscort: document.getElementById("final_escort")?.innerText || "",
+    clinicalResult: document.getElementById("res_clinical")?.innerText || "",
+    checklistResult: document.getElementById("res_checklist")?.innerText || "",
+    rikerResult: document.getElementById("res_riker")?.innerText || "",
+    riskCounts: document.getElementById("res_counts")?.innerText || "",
+    equipmentNeeded: document.getElementById("equipment_list")?.innerText || "",
+    o2Psi: document.getElementById("o2_psi")?.value || "",
+    o2Vol: document.getElementById("o2_vol")?.value || "",
+    hfncFlow: document.getElementById("hfnc_flow")?.value || "",
+    hfncFio2: document.getElementById("hfnc_fio2")?.value || "",
+    stdO2Flow: document.getElementById("std_o2_flow")?.value || "",
+    o2Available: document.getElementById("o2_available_vol")?.innerText || "",
+    o2TotalLpm: document.getElementById("o2_total_lpm")?.innerText || "",
+    o2DurationMin: document.getElementById("o2_duration_result")?.innerText || ""
+  };
+
+  // Capture every named/identified form control so no assessment choice is lost.
+  document.querySelectorAll("input, select, textarea").forEach((el, i) => {
+    const key = el.id || el.name || ("field_" + i);
+    if (el.type === "checkbox" || el.type === "radio") {
+      data[key] = el.checked ? (el.value || true) : false;
+    } else {
+      data[key] = el.value ?? "";
+    }
+  });
+  return data;
+}
+
+async function saveAssessment(eventType="manual") {
+  const data = collectAssessmentData(eventType);
+  sessionStorage.setItem("PTA_last_record", JSON.stringify(data));
+
+  if (!ONLINE_CONFIG.API_URL) {
+    console.warn("PTA: API_URL ยังไม่ได้ตั้งค่า ข้อมูลถูกเก็บไว้ใน sessionStorage ชั่วคราว");
+    return {ok:false, local:true, data};
+  }
+
+  try {
+    const body = new URLSearchParams({payload: JSON.stringify(data)});
+    const response = await fetch(ONLINE_CONFIG.API_URL, {
+      method: "POST",
+      headers: {"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
+      body
+    });
+    return {ok: response.ok, local:false, data};
+  } catch (err) {
+    console.error(err);
+    return {ok:false, local:true, data, error:String(err)};
+  }
+}
+
+// Replace the original print handler so data is saved first.
+async function onlinePrint() {
+  const result = await saveAssessment("print");
+  window.print();
+}
+
+// Replace the original PDF handler so data is saved first.
+async function onlineSavePDF() {
+  const result = await saveAssessment("save_pdf");
+  alert(result.ok
+    ? "บันทึกข้อมูลเรียบร้อยแล้ว กำลังเปิดหน้าต่างบันทึก PDF"
+    : "ไม่สามารถส่งข้อมูลไปฐานข้อมูลได้ ข้อมูลถูกเก็บไว้ชั่วคราวในเครื่องนี้");
+  window.print();
+}
+
+// Catch Ctrl/Cmd+P and save before opening print dialog.
+window.addEventListener("beforeprint", () => {
+  saveAssessment("print");
+});
+window.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+    e.preventDefault();
+    onlinePrint();
+  }
+});
+</script>
+
 </body>
 </html>

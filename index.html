@@ -489,7 +489,6 @@
             <h2 class="text-base font-bold text-emerald-900 border-b border-emerald-200 pb-1 mb-2">5. การคำนวณการใช้ออกซิเจน (Oxygen Calculation)</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-3">
-                <!-- Tank Data -->
                 <div class="bg-white p-2.5 rounded border border-emerald-200 space-y-2">
                     <h3 class="font-bold text-emerald-800">ข้อมูลถังออกซิเจน (Tank Info)</h3>
                     <div class="flex items-center justify-between gap-2">
@@ -497,341 +496,169 @@
                         <input type="number" id="o2_psi" class="border rounded px-2 py-1 w-24 text-right" placeholder="เช่น 1500" value="1500">
                     </div>
                     <div class="flex items-center justify-between gap-2">
-                        <label>ปริมาตรถัง Water Capacity (L):</label>
-                        <input type="number" id="o2_vol" class="border rounded px-2 py-1 w-24 text-right" placeholder="เช่น 4.7" value="4.7">
+                        <label>ประเภทถัง (Tank Size):</label>
+                        <select id="o2_tank_factor" class="border rounded px-2 py-1 text-xs">
+                            <option value="0.16">D Tank (Factor 0.16)</option>
+                            <option value="0.28" selected>E Tank (Factor 0.28)</option>
+                            <option value="1.56">M Tank (Factor 1.56)</option>
+                            <option value="3.14">G Tank (Factor 3.14)</option>
+                            <option value="2.41">H/K Tank (Factor 2.41)</option>
+                        </select>
                     </div>
-                    <div class="text-right text-emerald-700 font-semibold pt-1 border-t">
-                        ปริมาณ O2 ในถัง: <span id="o2_available_vol">0</span> ลิตร
+                    <div class="flex items-center justify-between gap-2">
+                        <label>Flow Rate (LPM):</label>
+                        <input type="number" id="o2_flow" class="border rounded px-2 py-1 w-24 text-right" placeholder="เช่น 5" value="5">
                     </div>
                 </div>
 
-                <!-- Usage Data -->
                 <div class="bg-white p-2.5 rounded border border-emerald-200 space-y-2">
-                    <h3 class="font-bold text-emerald-800">ปริมาณ O2 ที่ใช้ (Oxygen Demand)</h3>
-                    
-                    <!-- 1. HFNC -->
-                    <div class="border-b pb-1">
-                        <span class="font-semibold text-slate-700 block">1) HFNC Mode:</span>
-                        <div class="flex gap-2 items-center mt-1">
-                            Flow: <input type="number" id="hfnc_flow" class="border rounded px-1 w-16 text-right h-6" placeholder="0"> LPM
-                            FiO2: <input type="number" step="0.01" id="hfnc_fio2" class="border rounded px-1 w-16 text-right h-6" placeholder="0.21">
-                        </div>
+                    <h3 class="font-bold text-emerald-800">เวลาที่ใช้เดินทาง (Transport Time)</h3>
+                    <div class="flex items-center justify-between gap-2">
+                        <label>เวลาเดินทางจริง (นาที):</label>
+                        <input type="number" id="o2_time" class="border rounded px-2 py-1 w-24 text-right" placeholder="เช่น 20" value="20">
                     </div>
-
-                    <!-- 2. Standard O2 / Vent -->
-                    <div>
-                        <span class="font-semibold text-slate-700 block">2) Oxygen support / Vent Mode:</span>
-                        <div class="flex gap-2 items-center mt-1">
-                            Flow / O2 Need: <input type="number" id="std_o2_flow" class="border rounded px-1 w-16 text-right h-6" placeholder="0"> LPM
-                        </div>
-                    </div>
-
-                    <div class="text-right text-emerald-700 font-semibold pt-1 border-t">
-                        รวมอัตราใช้ออกซิเจน: <span id="o2_total_lpm">0</span> LPM
+                    <div class="flex items-center justify-between gap-2">
+                        <label>Safety Margin (%):</label>
+                        <input type="number" id="o2_safety" class="border rounded px-2 py-1 w-24 text-right" value="50">
                     </div>
                 </div>
             </div>
 
-            <!-- Result Calculation -->
-            <div class="bg-emerald-800 text-white p-3 rounded-lg flex justify-between items-center">
+            <div class="bg-emerald-100 border border-emerald-300 rounded-lg p-3 flex flex-wrap justify-between items-center text-xs">
                 <div>
-                    <span class="text-xs text-emerald-200 block">ระยะเวลาที่สามารถใช้ออกซิเจนได้ทั้งหมด (Total Duration)</span>
-                    <span class="text-xs text-emerald-300 italic">*คำนวณจากสูตร: ((PSI - 200) × ปริมาตรถัง) / 14.7</span>
+                    <div>ปริมาณ O2 ใช้ได้คงเหลือ: <span id="o2_avail_liter" class="font-bold text-emerald-900">0</span> Liters</div>
+                    <div>เวลาที่ใช้งานถัง O2 ได้ทั้งหมด: <span id="o2_duration" class="font-bold text-emerald-900">0</span> นาที</div>
                 </div>
-                <div class="text-right">
-                    <span id="o2_duration_result" class="text-2xl font-bold text-yellow-300">0</span>
-                    <span class="text-sm font-normal"> นาที</span>
+                <div class="text-right border-l border-emerald-300 pl-4">
+                    <div class="text-slate-600">เวลาที่ต้องเตรียมสำรองรวม Safety Factor:</div>
+                    <div id="o2_req_time" class="text-sm font-bold text-emerald-900">0 นาที</div>
+                    <div id="o2_status" class="font-extrabold text-sm text-green-700 mt-0.5">เพียงพอ (Safe)</div>
                 </div>
             </div>
         </div>
 
-        <!-- Action Buttons (Print & Save PDF) -->
-        <div class="mt-8 flex flex-wrap justify-center gap-4 no-print">
-            <!-- Save PDF Button -->
-            <button id="btnSavePdf" onclick="handleExportPDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                บันทึกเป็นไฟล์ PDF (Save PDF)
+        <!-- Action Buttons -->
+        <div class="mt-6 flex flex-wrap gap-3 justify-end no-print">
+            <button type="button" onclick="window.print()" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow">
+                🖨️ พิมพ์เอกสาร (Print)
             </button>
-
-            <!-- Print Button -->
-            <button id="btnPrint" onclick="handlePrint()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                พิมพ์รายงาน (Print)
+            <button type="button" onclick="handleExportPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow">
+                📄 ส่งออก PDF / บันทึกข้อมูล
             </button>
         </div>
 
     </div>
 
+    <!-- JavaScript Logic -->
     <script>
-        // *** วาง URL ของ Web App จาก Google Apps Script ที่นี่ ***
-        const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx.../exec"; // ระบุ URL ของ Apps Script ที่นี่
 
-        window.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener("DOMContentLoaded", () => {
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('assessDateTime').value = now.toISOString().slice(0,16);
-            calculateAll();
-        });
+            document.getElementById("assessDateTime").value = now.toISOString().slice(0, 16);
 
-        document.querySelectorAll('input, select').forEach(element => {
-            element.addEventListener('input', calculateAll);
-            element.addEventListener('change', calculateAll);
-        });
-
-        const ESCORT_PRIORITY = {
-            'Doctor+RN': 5,
-            'RN+PN': 4,
-            'RN': 3,
-            'PN': 2,
-            'Porter': 1
-        };
-
-        let calculatedResults = {
-            highCount: 0,
-            lowCount: 0,
-            checklistResult: 'Porter',
-            rikerResult: 'Porter',
-            clinicalResult: 'Porter',
-            finalEscort: 'Porter',
-            equipments: [],
-            o2Duration: 0
-        };
-
-        function calculateAll() {
-            const highCount = document.querySelectorAll('.chk-high:checked').length;
-            const lowCount = document.querySelectorAll('.chk-low:checked').length;
-            document.getElementById('res_counts').innerText = `High: ${highCount} | Low: ${lowCount}`;
-
-            let checklistResult = 'Porter';
-            if (highCount > 2) {
-                checklistResult = 'RN+PN';
-            } else if (highCount >= 1) {
-                checklistResult = 'RN';
-            } else if (lowCount >= 1) {
-                checklistResult = 'PN';
-            } else {
-                checklistResult = 'Porter';
-            }
-            document.getElementById('res_checklist').innerText = checklistResult;
-
-            let rikerResult = 'Porter';
-            const selectedRiker = document.querySelector('input[name="riker"]:checked');
-            if (selectedRiker) {
-                const val = selectedRiker.value;
-                if (val.startsWith('high')) {
-                    rikerResult = 'RN+PN';
-                } else if (val.startsWith('low')) {
-                    rikerResult = 'RN';
-                } else {
-                    rikerResult = 'Porter';
-                }
-            }
-            document.getElementById('res_riker').innerText = rikerResult;
-
-            let clinicalResult = 'Porter';
-            if (document.getElementById('clin_unstable').checked) {
-                clinicalResult = 'Doctor+RN';
-            } else if (document.getElementById('clin_need_rn').checked) {
-                clinicalResult = 'RN';
-            } else if (document.getElementById('clin_need_pn').checked) {
-                clinicalResult = 'PN';
-            }
-            document.getElementById('res_clinical').innerText = clinicalResult;
-
-            const results = [checklistResult, rikerResult, clinicalResult];
-            let highestEscort = 'Porter';
-            results.forEach(res => {
-                if (ESCORT_PRIORITY[res] > ESCORT_PRIORITY[highestEscort]) {
-                    highestEscort = res;
-                }
+            document.querySelectorAll("input, select").forEach(el => {
+                el.addEventListener("change", processForm);
+                el.addEventListener("input", processForm);
             });
-            document.getElementById('final_escort').innerText = highestEscort;
 
-            const equipments = updateEquipmentNeeded();
-            const o2Duration = calculateOxygen();
+            processForm();
+        });
 
-            calculatedResults = {
-                highCount,
-                lowCount,
-                checklistResult,
-                rikerResult,
-                clinicalResult,
-                finalEscort: highestEscort,
-                equipments,
-                o2Duration
-            };
+        function processForm() {
+            let highCount = document.querySelectorAll(".chk-high:checked").length;
+            let lowCount = document.querySelectorAll(".chk-low:checked").length;
+
+            let resChecklist = "Porter";
+            if (highCount >= 1) resChecklist = "MD + RN";
+            else if (lowCount >= 1) resChecklist = "RN / PN";
+
+            let resRiker = "Porter";
+            const rikerVal = document.querySelector('input[name="riker"]:checked')?.value;
+            if (rikerVal && rikerVal.startsWith("high")) resRiker = "MD + RN";
+            else if (rikerVal && rikerVal.startsWith("low")) resRiker = "RN / PN";
+
+            let resClinical = "Porter";
+            if (document.getElementById("clin_unstable").checked || document.getElementById("clin_need_rn").checked) {
+                resClinical = "MD + RN";
+            } else if (document.getElementById("clin_need_pn").checked) {
+                resClinical = "RN / PN";
+            }
+
+            document.getElementById("res_checklist").textContent = resChecklist;
+            document.getElementById("res_riker").textContent = resRiker;
+            document.getElementById("res_clinical").textContent = resClinical;
+            document.getElementById("res_counts").textContent = `High: ${highCount} | Low: ${lowCount}`;
+
+            let finalEscort = "Porter";
+            if (resChecklist === "MD + RN" || resRiker === "MD + RN" || resClinical === "MD + RN") {
+                finalEscort = "MD + RN";
+            } else if (resChecklist === "RN / PN" || resRiker === "RN / PN" || resClinical === "RN / PN") {
+                finalEscort = "RN / PN";
+            }
+            document.getElementById("final_escort").textContent = finalEscort;
+
+            updateEquipment();
+            calculateOxygen();
         }
 
-        function updateEquipmentNeeded() {
-            const requiredEquipments = new Set();
+        function updateEquipment() {
+            const listContainer = document.getElementById("equipment_list");
+            listContainer.innerHTML = "";
+            let items = [];
 
-            if (document.getElementById('item_unstable_vs').checked || 
-                document.getElementById('item_ami_high').checked || 
-                document.getElementById('item_pacemaker').checked || 
-                document.getElementById('item_ekg_unstable').checked ||
-                document.getElementById('clin_unstable').checked) {
-                requiredEquipments.add('Defibrillator');
-                requiredEquipments.add('cardiac board');
-                requiredEquipments.add('CPR box');
-                requiredEquipments.add('Ambu-bag');
-                requiredEquipments.add('Oxygen tank');
-            }
+            if (document.getElementById("item_ett").checked) items.push("Definitive Airway (ETT/TT)");
+            if (document.getElementById("item_vent").checked) items.push("Transport Ventilator / HFNC");
+            if (document.getElementById("item_mask_bag").checked) items.push("Ambu Bag with Mask");
+            if (document.getElementById("item_mon_sat").checked || document.getElementById("item_ekg_unstable").checked) items.push("Patient Monitor (ECG/SpO2/NIBP)");
+            if (document.getElementById("item_iv_rate").checked || document.getElementById("item_pump_need").checked) items.push("Infusion / Syringe Pump");
+            if (document.getElementById("item_iabp").checked) items.push("IABP / ECMO Unit");
+            if (document.getElementById("item_lsb").checked) items.push("Long Spinal Board");
 
-            if (document.getElementById('item_seizure').checked) {
-                requiredEquipments.add('ยากันชัก/sedative drug');
-                requiredEquipments.add('Ambu-bag');
-                requiredEquipments.add('Oral/Nasal airway');
-                requiredEquipments.add('Oxygen tank');
-                requiredEquipments.add('Suction portable');
-            }
-
-            if (document.getElementById('item_head_high').checked || document.getElementById('item_gcs_low').checked) {
-                requiredEquipments.add('Ambu-bag');
-                requiredEquipments.add('Oral/Nasal airway');
-                requiredEquipments.add('Oxygen tank');
-                requiredEquipments.add('Suction portable');
-            }
-
-            if (document.getElementById('item_vent').checked) {
-                requiredEquipments.add('Transport ventilator');
-                requiredEquipments.add('Ambu-bag');
-                requiredEquipments.add('Oxygen tank');
-                requiredEquipments.add('Suction portable');
-                requiredEquipments.add('monitor sat');
-            }
-
-            if (document.getElementById('item_ett').checked || document.getElementById('item_airway_obs').checked) {
-                requiredEquipments.add('Ambu-bag');
-                requiredEquipments.add('Oral/Nasal airway');
-                requiredEquipments.add('Suction portable');
-                requiredEquipments.add('Oxygen tank');
-            }
-
-            if (document.getElementById('item_high_alert').checked) {
-                requiredEquipments.add('ยากันชัก/sedative drug');
-            }
-
-            if (document.getElementById('item_mon_sat').checked || document.getElementById('item_cannula').checked || document.getElementById('item_mask_bag').checked) {
-                requiredEquipments.add('monitor sat');
-            }
-
-            if (document.getElementById('item_cannula').checked || document.getElementById('item_mask_bag').checked) {
-                requiredEquipments.add('Oxygen tank');
-            }
-
-            const container = document.getElementById('equipment_list');
-            container.innerHTML = '';
-
-            const equipArray = Array.from(requiredEquipments);
-            if (equipArray.length === 0) {
-                container.innerHTML = '<span class="text-slate-500 italic">ไม่มีอุปกรณ์เพิ่มเติมที่จำเป็นพิเศษ</span>';
+            if (items.length === 0) {
+                listContainer.innerHTML = '<span class="text-slate-500 italic">ไม่มีอุปกรณ์เพิ่มเติมที่จำเป็นพิเศษ</span>';
             } else {
-                equipArray.forEach(eq => {
-                    const badge = document.createElement('span');
-                    badge.className = 'bg-blue-600 text-white px-2.5 py-1 rounded-md font-semibold text-xs shadow-sm';
-                    badge.innerText = `✓ ${eq}`;
-                    container.appendChild(badge);
+                items.forEach(item => {
+                    const badge = document.createElement("span");
+                    badge.className = "bg-blue-100 text-blue-800 font-semibold px-2.5 py-1 rounded-md border border-blue-300";
+                    badge.textContent = item;
+                    listContainer.appendChild(badge);
                 });
             }
-            return equipArray;
         }
 
         function calculateOxygen() {
-            const psi = parseFloat(document.getElementById('o2_psi').value) || 0;
-            const vol = parseFloat(document.getElementById('o2_vol').value) || 0;
+            const psi = parseFloat(document.getElementById("o2_psi").value) || 0;
+            const factor = parseFloat(document.getElementById("o2_tank_factor").value) || 0.28;
+            const flow = parseFloat(document.getElementById("o2_flow").value) || 0;
+            const time = parseFloat(document.getElementById("o2_time").value) || 0;
+            const safetyPct = parseFloat(document.getElementById("o2_safety").value) || 50;
 
-            let availableO2Liters = 0;
-            if (psi > 200) {
-                availableO2Liters = ((psi - 200) * vol) / 14.7;
-            }
-            document.getElementById('o2_available_vol').innerText = availableO2Liters.toFixed(1);
+            const safePsi = Math.max(0, psi - 200); // หัก Safety Reserve 200 PSI
+            const availLiter = safePsi * factor;
+            const duration = flow > 0 ? availLiter / flow : 0;
 
-            const hfncFlow = parseFloat(document.getElementById('hfnc_flow').value) || 0;
-            const hfncFiO2 = parseFloat(document.getElementById('hfnc_fio2').value) || 0;
-            
-            let hfncO2Need = 0;
-            if (hfncFlow > 0) {
-                if (hfncFiO2 > 0.21) {
-                    hfncO2Need = hfncFlow * ((hfncFiO2 - 0.21) / 0.79);
-                } else {
-                    hfncO2Need = hfncFlow;
-                }
-            }
+            const reqTime = time * (1 + safetyPct / 100);
 
-            const stdFlow = parseFloat(document.getElementById('std_o2_flow').value) || 0;
-            const totalLpm = hfncO2Need + stdFlow;
-            document.getElementById('o2_total_lpm').innerText = totalLpm.toFixed(1);
+            document.getElementById("o2_avail_liter").textContent = availLiter.toFixed(0);
+            document.getElementById("o2_duration").textContent = duration.toFixed(0);
+            document.getElementById("o2_req_time").textContent = `${reqTime.toFixed(0)} นาที`;
 
-            let durationMin = 0;
-            if (totalLpm > 0 && availableO2Liters > 0) {
-                durationMin = availableO2Liters / totalLpm;
-            }
-
-            const finalMin = Math.floor(durationMin);
-            document.getElementById('o2_duration_result').innerText = finalMin;
-            return finalMin;
-        }
-
-        // *** บันทึกข้อมูลไปยัง Google Sheets ***
-        async function saveDataToGoogleSheet(actionType) {
-            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbypY-YsSEZAfyR898EBG7EBHlE4JrSVQknaoCxHxj-ruIP4LO9wqi35lkD8yzqiX2QG/exec") {
-                console.warn("ยังไม่ได้ตั้งค่า GOOGLE_SCRIPT_URL ข้อมูลจะไม่ถูกบันทึก");
-                return;
-            }
-
-            // รวบรวมข้อมูล Checklist ที่ถูกเลือกทั้งหมด
-            const checkedItems = [];
-            document.querySelectorAll('#assessmentForm input[type="checkbox"]:checked').forEach(chk => {
-                const label = document.querySelector(`label[for="${chk.id}"]`);
-                if (label) checkedItems.push(label.innerText.trim());
-            });
-
-            const payload = {
-                action_type: actionType,
-                patient_name: document.getElementById('patientName').value,
-                patient_hn: document.getElementById('patientHN').value,
-                patient_age: document.getElementById('patientAge').value,
-                assess_date_time: document.getElementById('assessDateTime').value,
-                from_ward: document.getElementById('fromWard').value,
-                to_ward: document.getElementById('toWard').value,
-                assessor_name: document.getElementById('assessorName').value,
-                high_count: calculatedResults.highCount,
-                low_count: calculatedResults.lowCount,
-                res_clinical: calculatedResults.clinicalResult,
-                res_checklist: calculatedResults.checklistResult,
-                res_riker: calculatedResults.rikerResult,
-                final_escort: calculatedResults.finalEscort,
-                equipment_needed: calculatedResults.equipments.join(', '),
-                o2_duration_min: calculatedResults.o2Duration,
-                checked_items: checkedItems.join('; ')
-            };
-
-            try {
-                // ส่งข้อมูลด้วย mode: 'no-cors' เพื่อป้องกันปัญหา CORS กับ Apps Script
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                console.log('บันทึกข้อมูลเรียบร้อยแล้ว');
-            } catch (err) {
-                console.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล:', err);
+            const statusEl = document.getElementById("o2_status");
+            if (flow === 0) {
+                statusEl.textContent = "ไม่ได้ใช้ออกซิเจน";
+                statusEl.className = "font-extrabold text-sm text-slate-500 mt-0.5";
+            } else if (duration >= reqTime) {
+                statusEl.textContent = "เพียงพอ (Safe)";
+                statusEl.className = "font-extrabold text-sm text-green-700 mt-0.5";
+            } else {
+                statusEl.textContent = "⚠️ ไม่เพียงพอ! ควรเปลี่ยนถัง O2";
+                statusEl.className = "font-extrabold text-sm text-red-600 mt-0.5";
             }
         }
 
-        async function handleExportPDF() {
-            await saveDataToGoogleSheet('Save PDF');
-            alert('คำแนะนำ: ในหน้าต่างการสั่งพิมพ์ ให้เลือก Destination (ปลายทาง) เป็น "Save as PDF" หรือ "บันทึกเป็น PDF" แล้วกด Save ได้เลยครับ');
-            window.print();
-        }
-
-        async function handlePrint() {
-            await saveDataToGoogleSheet('Print');
+        function handleExportPDF() {
             window.print();
         }
     </script>

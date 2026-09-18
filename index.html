@@ -89,7 +89,89 @@
                 margin: 0 !important;
                 padding: 2px 0 !important;
             }
+
+            /* ===== Dedicated 2-page print report ===== */
+            .max-w-5xl { display: block !important; }
+            .max-w-5xl > *:not(#printReport) { display: none !important; }
+            #printReport { display: block !important; }
+            .print-page {
+                width: 100%;
+                height: 275mm;
+                box-sizing: border-box;
+                page-break-after: always;
+                break-after: page;
+                position: relative;
+		overflow: hidden;
+            }
+            .print-page:last-child { page-break-after: auto; break-after: auto; }
+            .print-report-title { font-size: 17pt; font-weight: 700; margin-bottom: 2mm; }
+            .print-report-subtitle { font-size: 9pt; color: #444; margin-bottom: 3mm; }
+            .print-section-title {
+                font-size: 11.5pt; font-weight: 700;
+                border-bottom: 1px solid #555; padding-bottom: 1mm; margin: 3mm 0 1.5mm;
+            }
+            .print-patient-grid {
+                display: grid; grid-template-columns: 2fr 1fr 1fr 1.4fr;
+                gap: 1.5mm 4mm; font-size: 9pt;
+                border: 1px solid #aaa; padding: 2.5mm;
+            }
+            .print-field-label { font-weight: 700; }
+            .print-checklist {
+                font-size: 8.5pt; columns: 2; column-gap: 7mm;
+                border: 1px solid #bbb; padding: 2.5mm;
+            }
+            .print-check-item { break-inside: avoid; margin-bottom: 1mm; }
+            .print-result-grid {
+                display: grid; grid-template-columns: repeat(4, 1fr); gap: 2mm;
+                font-size: 8.5pt;
+            }
+            .print-result-box { border: 1px solid #999; padding: 2mm; min-height: 12mm; }
+            .print-result-box strong { display:block; font-size: 8pt; margin-bottom: .5mm; }
+            .print-equipment { border: 1px solid #999; padding: 2mm; font-size: 8.5pt; min-height: 9mm; }
+            .print-o2-grid {
+                display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 2mm;
+                font-size: 8.5pt;
+            }
+            .print-o2-box { border: 1px solid #999; padding: 2mm; }
+            .print-o2-box div { margin: .7mm 0; }
+            
+            /* การปรับแต่งหน้าที่ 2 */
+            .print-page2-header { border-bottom: 2px solid #555; padding-bottom: 1.5mm; margin-bottom: 2mm; }
+            .print-page2-header h2 { font-size: 13pt; font-weight: 700; margin: 0 0 1.5mm; }
+            .print-page2-meta {
+                display:grid; grid-template-columns: 2.2fr 1fr 1fr 1.5fr; gap: 1.5mm 4mm;
+                font-size: 8.5pt;
+            }
+            .vital-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:8pt; }
+            .vital-table th, .vital-table td { border:1px solid #555; padding:1mm; vertical-align:top; }
+            .vital-table th { text-align:center; font-weight:700; height:7mm; background-color: #f8fafc; }
+            .vital-table .col-time { width:9%; }
+            .vital-table .col-bp { width:10%; }
+            .vital-table .col-pr, .vital-table .col-rr, .vital-table .col-spo2 { width:8%; }
+            .vital-table .col-gcs { width:7%; }
+            .vital-table .col-note { width:50%; }
+            
+            /* ปรับความสูงแถวปกติของ Vital Signs ให้ลดลง */
+            .vital-table tbody tr.vs-row { height:9mm; }
+            .vital-table tbody tr.vs-row-dest { height:9mm; background-color: #fafafa; }
+            .vital-table .note-cell { height:117mm; }
+            
+            .print-sign-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                margin-top: 8mm;
+                font-size: 8.5pt;
+            }
+            .print-sign-box {
+                text-align: center;
+                width: 48%;
+            }
+            .print-sign-line { display:inline-block; width:55mm; border-bottom:1px solid #555; margin-left:1mm; }
         }
+
+        /* Print report is hidden on screen */
+        #printReport { display:none; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 p-2 md:p-6 min-h-screen">
@@ -499,11 +581,11 @@
                     <h3 class="font-bold text-emerald-800">ข้อมูลถังออกซิเจน (Tank Info)</h3>
                     <div class="flex items-center justify-between gap-2">
                         <label>แรงดันถัง (PSI):</label>
-                        <input type="number" id="o2_psi" class="border rounded px-2 py-1 w-24 text-right" placeholder="เช่น 1500" value="1500">
+                        <input type="number" id="o2_psi" class="border rounded px-2 py-1 w-24 text-right" placeholder="ใส่ค่าแรงดันของถัง">
                     </div>
                     <div class="flex items-center justify-between gap-2">
                         <label>ปริมาตรถัง Water Capacity (L):</label>
-                        <input type="number" id="o2_vol" class="border rounded px-2 py-1 w-24 text-right" placeholder="เช่น 4.7" value="4.7">
+                        <input type="number" id="o2_vol" class="border rounded px-2 py-1 w-24 text-right" placeholder="ใส่ปริมาตรของถัง(ลิตร)">
                     </div>
                     <div class="text-right text-emerald-700 font-semibold pt-1 border-t">
                         ปริมาณ O2 ในถัง: <span id="o2_available_vol">0</span> ลิตร
@@ -550,20 +632,88 @@
             </div>
         </div>
 
-        <!-- Action Buttons (Print & Save PDF) -->
+        <!-- Dedicated print report: generated from entered/selected data -->
+        <div id="printReport">
+            <section class="print-page" id="printPage1">
+                <div class="print-report-title">แบบประเมินผู้ป่วยก่อนการย้าย (Pre-Transfer Assessment)</div>
+                <div class="print-report-subtitle">รายงานผลการประเมินและการเตรียมความพร้อมก่อนการเคลื่อนย้ายผู้ป่วย</div>
+
+                <div class="print-section-title">1. ข้อมูลผู้ป่วยและเวลาประเมิน</div>
+                <div id="printPatient" class="print-patient-grid"></div>
+
+                <div id="printChecklistSection">
+                    <div class="print-section-title">2. รายการประเมินสภาวะผู้ป่วย (เฉพาะรายการที่เลือก/กรอกข้อมูล)</div>
+                    <div id="printChecklist" class="print-checklist"></div>
+                </div>
+
+                <div class="print-section-title">3. ผลการประมวลผล Escort Team</div>
+                <div id="printResults" class="print-result-grid"></div>
+
+                <div class="print-section-title">4. อุปกรณ์ที่จำเป็นในการเคลื่อนย้าย</div>
+                <div id="printEquipment" class="print-equipment"></div>
+
+                <div class="print-section-title">5. การคำนวณการใช้ออกซิเจน</div>
+                <div id="printOxygen" class="print-o2-grid"></div>
+            </section>
+
+            <section class="print-page" id="printPage2">
+                <div class="print-page2-header">
+                    <h2>แบบประเมินผู้ป่วยระหว่างการเคลื่อนย้าย (During transfer assessment)</h2>
+                    <div id="printPatientHeader" class="print-page2-meta"></div>
+                </div>
+                <table class="vital-table">
+                    <colgroup>
+                        <col class="col-time"><col class="col-bp"><col class="col-pr"><col class="col-rr"><col class="col-spo2"><col class="col-gcs"><col class="col-note">
+                    </colgroup>
+                    <thead><tr>
+                        <th>เวลา</th><th>BP (mmHg)</th><th>PR (/min)</th><th>RR (/min)</th><th>SpO2 (%)</th><th>GCS</th><th>Nurse note</th>
+                    </tr></thead>
+                    <tbody>
+                        <tr class="vs-row"><td></td><td></td><td></td><td></td><td></td><td></td><td class="note-cell" rowspan="13"></td></tr>
+                        <tr class="vs-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr class="vs-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr class="vs-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr class="vs-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr class="vs-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+			<tr class="vs-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr class="vs-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr class="vs-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr class="vs-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr class="vs-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+			<tr class="vs-row"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <!-- เพิ่มแถว V/S ปลายทาง -->
+                        <tr class="vs-row-dest">
+                            <td style="font-weight: bold; text-align: center; vertical-align: middle; background-color: #f1f5f9;">V/S<br>ปลายทาง</td>
+                            <td></td><td></td><td></td><td></td><td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="print-sign-container">
+                    <div class="print-sign-box">
+                        ผู้ส่งมอบ (ผู้บันทึก) <span class="print-sign-line"></span><br>
+                        <span style="font-size: 7.5pt; color: #555;">(....................................................................)</span>
+                    </div>
+                    <!-- เพิ่มเจ้าหน้าที่ปลายทางเซ็นต์รับ -->
+                    <div class="print-sign-box">
+                        เจ้าหน้าที่ปลายทางเซ็นต์รับ <span class="print-sign-line"></span><br>
+                        <span style="font-size: 7.5pt; color: #555;">(....................................................................)</span><br>
+                        <span style="font-size: 8pt; margin-top: 1mm; display: inline-block;">วันที่/เวลา .............../.............../...............  .........:......... น.</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Action Buttons (Save & Print) -->
         <div class="mt-8 flex flex-wrap justify-center gap-4 no-print">
-            <!-- Save PDF Button -->
-            <button onclick="onlineSavePDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                บันทึกเป็นไฟล์ PDF (Save PDF)
+            <!-- Save Button -->
+            <button type="button" onclick="submitAssessmentData()" id="btnSubmit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
+                💾 บันทึกข้อมูลเข้า Google Sheet
             </button>
 
             <!-- Print Button -->
-            <button onclick="onlinePrint()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2">
+            <button type="button" onclick="onlinePrint()" id="btnPrint" disabled class="bg-slate-300 text-slate-500 font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2 cursor-not-allowed">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 002 2v4h2m2 4h6a2 2 0 002-2v-4H9a2 2 0 002 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
                 พิมพ์รายงาน (Print)
             </button>
@@ -848,25 +998,96 @@ async function saveAssessment(eventType="manual") {
   }
 }
 
-// Replace the original print handler so data is saved first.
-async function onlinePrint() {
-  const result = await saveAssessment("print");
+// Print is allowed only after the user has pressed Save successfully.
+let assessmentSaved = false;
+
+function escPrint(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
+}
+
+function getInputValue(id) {
+  return document.getElementById(id)?.value?.trim() || "";
+}
+
+function buildPrintReport() {
+  const patientFields = [
+    ["ชื่อ-นามสกุล", getInputValue("patientName")],
+    ["HN", getInputValue("patientHN")],
+    ["อายุ (ปี)", getInputValue("patientAge")],
+    ["วันที่-เวลา ประเมิน", getInputValue("assessDateTime")],
+    ["หอผู้ป่วยต้นทาง", getInputValue("fromWard")],
+    ["หอผู้ป่วยปลายทาง", getInputValue("toWard")],
+    ["ชื่อผู้ประเมิน", getInputValue("assessorName")]
+  ];
+  const patientHtml = patientFields.filter(([,v]) => v).map(([label,value]) =>
+    `<div><span class="print-field-label">${escPrint(label)}:</span> ${escPrint(value)}</div>`
+  ).join("");
+  document.getElementById("printPatient").innerHTML = patientHtml || "<div>ไม่มีข้อมูล</div>";
+  document.getElementById("printPatientHeader").innerHTML = patientFields.filter(([,v]) => v).map(([label,value]) =>
+    `<div><span class="print-field-label">${escPrint(label)}:</span> ${escPrint(value)}</div>`
+  ).join("");
+
+  // Checklist: keep only checked items and fields that contain a value.
+  const items = [];
+  document.querySelectorAll("#assessmentForm .item-wrapper").forEach(wrapper => {
+    const check = wrapper.querySelector('input[type="checkbox"]:checked, input[type="radio"]:checked');
+    if (!check) return;
+    const clone = wrapper.cloneNode(true);
+    clone.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => el.remove());
+    clone.querySelectorAll("input, select, textarea").forEach(el => {
+      const value = el.value?.trim() || "";
+      const span = document.createElement("span");
+      span.textContent = value;
+      el.replaceWith(span);
+    });
+    const text = clone.textContent.replace(/\s+/g, " ").trim();
+    if (text) items.push(text);
+  });
+  const checklist = document.getElementById("printChecklist");
+  const checklistSection = document.getElementById("printChecklistSection");
+  checklist.innerHTML = items.map(x => `<div class="print-check-item">• ${escPrint(x)}</div>`).join("");
+  checklistSection.style.display = items.length ? "block" : "none";
+
+  const resultBoxes = [
+    ["Clinical Risk", document.getElementById("res_clinical")?.innerText || ""],
+    ["Checklist Count", document.getElementById("res_checklist")?.innerText || ""],
+    ["Riker Scale", document.getElementById("res_riker")?.innerText || ""],
+    ["High / Low Count", document.getElementById("res_counts")?.innerText || ""],
+    ["Final Escort Team Requirement", document.getElementById("final_escort")?.innerText || ""]
+  ];
+  document.getElementById("printResults").innerHTML = resultBoxes.filter(([,v]) => v).map(([label,value]) =>
+    `<div class="print-result-box"><strong>${escPrint(label)}</strong>${escPrint(value)}</div>`
+  ).join("");
+  document.getElementById("printResults").style.gridTemplateColumns = resultBoxes.filter(([,v]) => v).length > 4 ? "repeat(4, 1fr)" : "repeat(4, 1fr)";
+
+  const equipment = document.getElementById("equipment_list")?.innerText?.trim() || "";
+  document.getElementById("printEquipment").innerHTML = equipment && !/ไม่มีอุปกรณ์เพิ่มเติม/.test(equipment) ? escPrint(equipment) : "";
+
+  const o2 = [
+    ["แรงดันถัง (PSI)", getInputValue("o2_psi")],
+    ["ปริมาตรถัง Water Capacity (L)", getInputValue("o2_vol")],
+    ["ปริมาณ O2 ในถัง (L)", document.getElementById("o2_available_vol")?.innerText || ""],
+    ["HFNC Flow (LPM)", getInputValue("hfnc_flow")],
+    ["HFNC FiO2", getInputValue("hfnc_fio2")],
+    ["Standard O2 / Vent Flow (LPM)", getInputValue("std_o2_flow")],
+    ["รวมอัตราใช้ออกซิเจน (LPM)", document.getElementById("o2_total_lpm")?.innerText || ""],
+    ["ระยะเวลาที่สามารถใช้ออกซิเจนได้ทั้งหมด (นาที)", document.getElementById("o2_duration_result")?.innerText || ""]
+  ];
+  document.getElementById("printOxygen").innerHTML = o2.filter(([,v]) => v && v !== "0").map(([label,value]) =>
+    `<div class="print-o2-box"><strong>${escPrint(label)}</strong><div>${escPrint(value)}</div></div>`
+  ).join("");
+}
+
+function onlinePrint() {
+  if (!assessmentSaved) {
+    alert("กรุณากดปุ่ม “บันทึกข้อมูลเข้า Google Sheet” ก่อนพิมพ์รายงาน");
+    return;
+  }
+  buildPrintReport();
   window.print();
 }
 
-// Replace the original PDF handler so data is saved first.
-async function onlineSavePDF() {
-  const result = await saveAssessment("save_pdf");
-  alert(result.ok
-    ? "บันทึกข้อมูลเรียบร้อยแล้ว กำลังเปิดหน้าต่างบันทึก PDF"
-    : "ไม่สามารถส่งข้อมูลไปฐานข้อมูลได้ ข้อมูลถูกเก็บไว้ชั่วคราวในเครื่องนี้");
-  window.print();
-}
-
-// Catch Ctrl/Cmd+P and save before opening print dialog.
-window.addEventListener("beforeprint", () => {
-  saveAssessment("print");
-});
+// Block browser print shortcut until the data has been saved.
 window.addEventListener("keydown", (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
     e.preventDefault();
@@ -874,12 +1095,7 @@ window.addEventListener("keydown", (e) => {
   }
 });
 </script>
-<!-- ปุ่มกดบันทึกข้อมูล -->
-<div class="mt-6 text-center no-print">
-    <button type="button" onclick="submitAssessmentData()" id="btnSubmit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg text-base transition-all">
-        💾 บันทึกข้อมูลเข้า Google Sheet
-    </button>
-</div>
+
 
 <script>
   // ⚠️ นำ Web App URL ที่ได้จากการ Deploy ใน Apps Script มาวางตรงนี้
@@ -932,12 +1148,24 @@ window.addEventListener("keydown", (e) => {
       body: JSON.stringify(formData)
     })
     .then(() => {
+      assessmentSaved = true;
+      const printBtn = document.getElementById("btnPrint");
+      if (printBtn) {
+        printBtn.disabled = false;
+        printBtn.className = "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2 cursor-pointer";
+      }
       alert("✅ บันทึกข้อมูลเข้า Google Sheet เรียบร้อยแล้ว!");
       btn.disabled = false;
       btn.innerText = "💾 บันทึกข้อมูลเข้า Google Sheet";
     })
     .catch(error => {
       console.error("Error:", error);
+      assessmentSaved = false;
+      const printBtn = document.getElementById("btnPrint");
+      if (printBtn) {
+        printBtn.disabled = true;
+        printBtn.className = "bg-slate-300 text-slate-500 font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2 cursor-not-allowed";
+      }
       alert("❌ เกิดข้อผิดพลาดในการส่งข้อมูล");
       btn.disabled = false;
       btn.innerText = "💾 บันทึกข้อมูลเข้า Google Sheet";

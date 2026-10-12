@@ -1101,75 +1101,89 @@ window.addEventListener("keydown", (e) => {
   // ⚠️ นำ Web App URL ที่ได้จากการ Deploy ใน Apps Script มาวางตรงนี้
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSBNhcoChneshxbVBL3p4ikVwgujtFMq8sYoQyRAE_xX14Qg_9LUIjyJ-IMQdB7HJZ/exec";
 
-  function submitAssessmentData() {
-    const btn = document.getElementById("btnSubmit");
-    btn.disabled = true;
-    btn.innerText = "⏳ กำลังบันทึกข้อมูล...";
+  function extractPrintCss() {
+    const styleEl = document.querySelector("style");
+    const cssText = styleEl ? styleEl.textContent : "";
+    const start = cssText.indexOf("@media print");
+    if (start < 0) return "";
+    const open = cssText.indexOf("{", start);
+    if (open < 0) return "";
 
-    // 1. ดึงข้อมูลพื้นฐานจาก Input Text / Number / DateTime
-    const formData = {
-      patientName: document.getElementById("patientName")?.value || "",
-      patientHN: document.getElementById("patientHN")?.value || "",
-      patientAge: document.getElementById("patientAge")?.value || "",
-      assessDateTime: document.getElementById("assessDateTime")?.value || "",
-      fromWard: document.getElementById("fromWard")?.value || "",
-      toWard: document.getElementById("toWard")?.value || "",
-      assessorName: document.getElementById("assessorName")?.value || "",
-      ettSize: document.getElementById("ett_size")?.value || "",
-      ettDepth: document.getElementById("ett_depth")?.value || "",
-      airwaySize: document.getElementById("airway_size")?.value || "",
-      ventSetting: document.getElementById("vent_setting")?.value || "",
-      reasonRN: document.getElementById("reason_rn")?.value || "",
-      reasonPN: document.getElementById("reason_pn")?.value || "",
-      finalEscort: document.getElementById("final_escort")?.innerText || ""
-    };
-
-    // 2. ดึงค่า Radio Button (Riker Scale)
-    const selectedRiker = document.querySelector('input[name="riker"]:checked');
-    formData["rikerScale"] = selectedRiker ? selectedRiker.id : "ไม่ได้เลือก";
-
-    // 3. วนลูปดึง Checkbox ทุกตัวในฟอร์มแบบอัตโนมัติ
-    const checkboxes = document.querySelectorAll('#assessmentForm input[type="checkbox"]');
-    checkboxes.forEach(chk => {
-      // ใช้ id หรือ label ในการระบุชื่อคอลัมน์
-      const chkKey = chk.id || chk.name;
-      if (chkKey) {
-        formData[chkKey] = chk.checked ? "TRUE" : "FALSE";
+    let depth = 1;
+    let quote = "";
+    let escaped = false;
+    for (let i = open + 1; i < cssText.length; i++) {
+      const ch = cssText[i];
+      if (quote) {
+        if (escaped) escaped = false;
+        else if (ch === "\\") escaped = true;
+        else if (ch === quote) quote = "";
+        continue;
       }
-    });
+      if (ch === "'" || ch === '"') { quote = ch; continue; }
+      if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) return cssText.slice(open + 1, i);
+      }
+    }
+    return "";
+  }
 
-    // 4. ส่งข้อมูลไปยัง Google Apps Script
-    fetch(SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(formData)
-    })
-    .then(() => {
+  async function submitAssessmentData() {
+    const btn = document.getElementById("btnSubmit");
+    const printBtn = document.getElementById("btnPrint");
+    const originalText = "💾 บันทึกข้อมูลเข้า Google Sheet";
+
+    if (!SCRIPT_URL) {
+      alert("ยังไม่ได้กำหนด URL ของ Google Apps Script");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "⏳ กำลังบันทึกข้อมูลและสร้าง PDF...";
+    if (printBtn) printBtn.disabled = true;
+
+    try {
+      // สร้างรายงานฉบับเดียวกับที่ใช้ในหน้าพิมพ์ ก่อนส่งไปสร้าง PDF
+      calculateAll();
+      buildPrintReport();
+
+      const data = collectAssessmentData("manual");
+      data.recordId = data.recordId || ("PTA-" + Date.now());
+      data.timestamp = new Date().toISOString();
+      data.reportHtml = document.getElementById("printReport").innerHTML;
+      data.reportCss = extractPrintCss();
+
+      // Apps Script รับ payload แบบ JSON ใน body
+      // no-cors ทำให้เบราว์เซอร์อ่าน response ไม่ได้ จึงยืนยันผลสำเร็จจากฝั่ง client โดยตรงไม่ได้
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(data)
+      });
+
+      // คำขอถูกส่งออกจากหน้าเว็บแล้ว แต่ no-cors ไม่สามารถยืนยันได้ว่า
+      // Google Sheets และ Drive ทำงานสำเร็จจริงหรือไม่
       assessmentSaved = true;
-      const printBtn = document.getElementById("btnPrint");
       if (printBtn) {
         printBtn.disabled = false;
         printBtn.className = "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2 cursor-pointer";
       }
-      alert("✅ บันทึกข้อมูลเข้า Google Sheet เรียบร้อยแล้ว!");
-      btn.disabled = false;
-      btn.innerText = "💾 บันทึกข้อมูลเข้า Google Sheet";
-    })
-    .catch(error => {
-      console.error("Error:", error);
+      alert("ส่งคำขอบันทึกข้อมูลแล้ว กรุณาตรวจสอบ Google Sheet และโฟลเดอร์ Drive เพื่อยืนยันว่าบันทึกสำเร็จ");
+    } catch (error) {
+      console.error("Error sending assessment:", error);
       assessmentSaved = false;
-      const printBtn = document.getElementById("btnPrint");
       if (printBtn) {
         printBtn.disabled = true;
         printBtn.className = "bg-slate-300 text-slate-500 font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2 cursor-not-allowed";
       }
-      alert("❌ เกิดข้อผิดพลาดในการส่งข้อมูล");
+      alert("ไม่สามารถส่งคำขอได้: " + String(error));
+    } finally {
       btn.disabled = false;
-      btn.innerText = "💾 บันทึกข้อมูลเข้า Google Sheet";
-    });
+      btn.innerText = originalText;
+    }
   }
 </script>
 </body>

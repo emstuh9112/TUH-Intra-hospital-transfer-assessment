@@ -120,7 +120,14 @@
                 font-size: 8.5pt; columns: 2; column-gap: 7mm;
                 border: 1px solid #bbb; padding: 2.5mm;
             }
-            .print-check-item { break-inside: avoid; margin-bottom: 1mm; }
+            .print-check-item { break-inside: avoid; margin-bottom: 1mm; white-space: pre-line; }
+            .print-pre-vitals {
+                display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+                gap: 1.5mm; border: 1px solid #999; padding: 2mm; font-size: 8.5pt;
+            }
+            .print-pre-vitals > div { min-width: 0; overflow-wrap: anywhere; }
+            .print-pre-vitals .print-field-label { display: block; }
+            .print-pre-vitals-title { margin-top: 2mm !important; }
             .print-result-grid {
                 display: grid; grid-template-columns: repeat(4, 1fr); gap: 2mm;
                 font-size: 8.5pt;
@@ -371,10 +378,12 @@
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_high_alert" class="chk-high" data-equip="sedative">
                             <label for="item_high_alert">High alert drug / IV sedative drug</label>
+                            <textarea id="high_alert_drug_list" rows="2" class="border rounded px-2 py-1 w-full md:w-64 text-xs" placeholder="ระบุรายการยา (พิมพ์ได้หลายบรรทัด)"></textarea>
                         </div>
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_inotropic" class="chk-high">
                             <label for="item_inotropic">Inotropic drugs / IV load</label>
+                            <textarea id="inotropic_drug_list" rows="2" class="border rounded px-2 py-1 w-full md:w-64 text-xs" placeholder="ระบุรายการยา (พิมพ์ได้หลายบรรทัด)"></textarea>
                         </div>
                     </div>
                 </div>
@@ -632,6 +641,20 @@
             </div>
         </div>
 
+        <!-- Part 6: Vital sign pre-transfer -->
+        <div class="mt-6 bg-rose-50 border border-rose-200 p-4 rounded-xl print-clean print-tight" id="preTransferVitalSection">
+            <h2 class="text-base font-bold text-rose-900 border-b border-rose-200 pb-1 mb-3">6. Vital sign pre-transfer</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 text-xs">
+                <div><label class="block font-semibold mb-1">เวลา</label><input id="pre_vs_time" type="text" placeholder="เช่น 08:30" class="border rounded px-2 py-1 w-full"></div>
+                <div><label class="block font-semibold mb-1">BT</label><input id="pre_vs_bt" type="text" placeholder="°C" class="border rounded px-2 py-1 w-full"></div>
+                <div><label class="block font-semibold mb-1">BP</label><input id="pre_vs_bp" type="text" placeholder="mmHg" class="border rounded px-2 py-1 w-full"></div>
+                <div><label class="block font-semibold mb-1">HR</label><input id="pre_vs_hr" type="text" placeholder="/min" class="border rounded px-2 py-1 w-full"></div>
+                <div><label class="block font-semibold mb-1">RR</label><input id="pre_vs_rr" type="text" placeholder="/min" class="border rounded px-2 py-1 w-full"></div>
+                <div><label class="block font-semibold mb-1">O2sat</label><input id="pre_vs_o2sat" type="text" placeholder="%" class="border rounded px-2 py-1 w-full"></div>
+                <div><label class="block font-semibold mb-1">GCS</label><input id="pre_vs_gcs" type="text" placeholder="E/V/M" class="border rounded px-2 py-1 w-full"></div>
+            </div>
+        </div>
+
         <!-- Dedicated print report: generated from entered/selected data -->
         <div id="printReport">
             <section class="print-page" id="printPage1">
@@ -654,6 +677,9 @@
 
                 <div class="print-section-title">5. การคำนวณการใช้ออกซิเจน</div>
                 <div id="printOxygen" class="print-o2-grid"></div>
+
+                <div class="print-section-title">6. Vital sign pre-transfer</div>
+                <div id="printPreTransferVitals" class="print-pre-vitals"></div>
             </section>
 
             <section class="print-page" id="printPage2">
@@ -661,6 +687,8 @@
                     <h2>แบบประเมินผู้ป่วยระหว่างการเคลื่อนย้าย (During transfer assessment)</h2>
                     <div id="printPatientHeader" class="print-page2-meta"></div>
                 </div>
+                <div class="print-section-title print-pre-vitals-title">Vital sign pre-transfer</div>
+                <div id="printPreTransferVitalsPage2" class="print-pre-vitals"></div>
                 <table class="vital-table">
                     <colgroup>
                         <col class="col-time"><col class="col-bp"><col class="col-pr"><col class="col-rr"><col class="col-spo2"><col class="col-gcs"><col class="col-note">
@@ -1038,6 +1066,7 @@ function buildPrintReport() {
       const value = el.value?.trim() || "";
       const span = document.createElement("span");
       span.textContent = value;
+      if (el.tagName === "TEXTAREA") span.style.whiteSpace = "pre-line";
       el.replaceWith(span);
     });
     const text = clone.textContent.replace(/\s+/g, " ").trim();
@@ -1076,6 +1105,23 @@ function buildPrintReport() {
   document.getElementById("printOxygen").innerHTML = o2.filter(([,v]) => v && v !== "0").map(([label,value]) =>
     `<div class="print-o2-box"><strong>${escPrint(label)}</strong><div>${escPrint(value)}</div></div>`
   ).join("");
+
+  // Vital signs pre-transfer: display on both report pages, retaining only entered values.
+  const preVitals = [
+    ["เวลา", getInputValue("pre_vs_time")],
+    ["BT", getInputValue("pre_vs_bt")],
+    ["BP", getInputValue("pre_vs_bp")],
+    ["HR", getInputValue("pre_vs_hr")],
+    ["RR", getInputValue("pre_vs_rr")],
+    ["O2sat", getInputValue("pre_vs_o2sat")],
+    ["GCS", getInputValue("pre_vs_gcs")]
+  ];
+  const preVitalsHtml = preVitals.filter(([,v]) => v).map(([label,value]) =>
+    `<div><span class="print-field-label">${escPrint(label)}</span>${escPrint(value)}</div>`
+  ).join("");
+  const preVitalsFallback = '<div>ไม่มีข้อมูล</div>';
+  document.getElementById("printPreTransferVitals").innerHTML = preVitalsHtml || preVitalsFallback;
+  document.getElementById("printPreTransferVitalsPage2").innerHTML = preVitalsHtml || preVitalsFallback;
 }
 
 function onlinePrint() {
@@ -1131,6 +1177,9 @@ window.addEventListener("keydown", (e) => {
   }
 
   async function submitAssessmentData() {
+    const confirmed = window.confirm("เมื่อกดบันทึกข้อมูลแล้ว จะไม่สามารถแก้ไขข้อมูลรายการนี้ได้ ต้องการยืนยันและเริ่มบันทึกข้อมูลหรือไม่?");
+    if (!confirmed) return;
+
     const btn = document.getElementById("btnSubmit");
     const printBtn = document.getElementById("btnPrint");
     const originalText = "💾 บันทึกข้อมูลเข้า Google Sheet";

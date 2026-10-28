@@ -881,9 +881,12 @@
                 requiredEquipments.add('Oxygen tank');
             }
 
-            if (document.getElementById('item_high_alert').checked) {
-                requiredEquipments.add('ยากันชัก/sedative drug');
-            }
+			if (document.getElementById('item_high_alert').checked) {
+    			requiredEquipments.add('Oral/Nasal airway');
+    			requiredEquipments.add('Oxygen tank');
+    			requiredEquipments.add('Ambu-bag');
+    			requiredEquipments.add('monitor sat');
+			}
 
             if (document.getElementById('item_mon_sat').checked || document.getElementById('item_cannula').checked || document.getElementById('item_mask_bag').checked) {
                 requiredEquipments.add('monitor sat');

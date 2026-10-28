@@ -1124,13 +1124,58 @@ function buildPrintReport() {
   document.getElementById("printPreTransferVitalsPage2").innerHTML = preVitalsHtml || preVitalsFallback;
 }
 
-function onlinePrint() {
+async function onlinePrint() {
   if (!assessmentSaved) {
     alert("กรุณากดปุ่ม “บันทึกข้อมูลเข้า Google Sheet” ก่อนพิมพ์รายงาน");
     return;
   }
-  buildPrintReport();
-  window.print();
+
+  const printBtn = document.getElementById("btnPrint");
+  if (printBtn && printBtn.disabled) return;
+  const originalText = printBtn ? printBtn.innerText : "";
+
+  try {
+    if (printBtn) {
+      printBtn.disabled = true;
+      printBtn.innerText = "⏳ กำลังสร้าง PDF และเปิดหน้าพิมพ์...";
+    }
+
+    calculateAll();
+    buildPrintReport();
+
+    const saved = JSON.parse(sessionStorage.getItem("PTA_saved_record") || "{}");
+    if (!saved.recordId) {
+      throw new Error("ไม่พบรหัสรายการที่บันทึกไว้ กรุณาบันทึกข้อมูลอีกครั้ง");
+    }
+
+    const reportData = collectAssessmentData("print");
+    reportData.eventType = "print";
+    // ใช้ recordId เดียวกับรายการที่บันทึก เพื่อให้ Apps Script ระบุว่าเป็นรายงานของรายการเดิม
+    reportData.recordId = saved.recordId;
+    reportData.timestamp = new Date().toISOString();
+    reportData.reportHtml = document.getElementById("printReport").innerHTML;
+    reportData.reportCss = extractPrintCss();
+    reportData.pdfFolderId = "1pfCvKd9dGUA7dl0SZdawJjLL63TStNfp";
+
+    // ส่งคำขอสร้าง PDF หนึ่งครั้ง; Apps Script ต้องตั้งให้ eventType=print ไม่บันทึก Sheet ซ้ำ
+    await fetch(ONLINE_CONFIG.API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(reportData)
+    });
+
+    window.print();
+  } catch (error) {
+    console.error("Error sending print report:", error);
+    alert("ส่งคำขอสร้าง PDF ไม่สำเร็จ: " + String(error.message || error) + "\nจะเปิดหน้าพิมพ์ให้ตามปกติ");
+    window.print();
+  } finally {
+    if (printBtn) {
+      printBtn.disabled = false;
+      printBtn.innerText = originalText || "🖨️ พิมพ์รายงาน";
+    }
+  }
 }
 
 // Block browser print shortcut until the data has been saved.
@@ -1177,6 +1222,11 @@ window.addEventListener("keydown", (e) => {
   }
 
   async function submitAssessmentData() {
+    if (assessmentSaved) {
+      alert("รายการนี้บันทึกแล้ว ไม่สามารถบันทึกซ้ำได้ หากต้องการพิมพ์รายงานให้กดปุ่ม พิมพ์รายงาน");
+      return;
+    }
+
     const confirmed = window.confirm("เมื่อกดบันทึกข้อมูลแล้ว จะไม่สามารถแก้ไขข้อมูลรายการนี้ได้ ต้องการยืนยันและเริ่มบันทึกข้อมูลหรือไม่?");
     if (!confirmed) return;
 
@@ -1190,22 +1240,22 @@ window.addEventListener("keydown", (e) => {
     }
 
     btn.disabled = true;
-    btn.innerText = "⏳ กำลังบันทึกข้อมูลและสร้าง PDF...";
+    btn.innerText = "⏳ กำลังบันทึกข้อมูล...";
     if (printBtn) printBtn.disabled = true;
 
     try {
-      // สร้างรายงานฉบับเดียวกับที่ใช้ในหน้าพิมพ์ ก่อนส่งไปสร้าง PDF
       calculateAll();
       buildPrintReport();
 
-      const data = collectAssessmentData("manual");
-      data.recordId = data.recordId || ("PTA-" + Date.now());
+      const data = collectAssessmentData("save");
+      data.eventType = "save";
+      data.recordId = "PTA-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8).toUpperCase();
       data.timestamp = new Date().toISOString();
-      data.reportHtml = document.getElementById("printReport").innerHTML;
-      data.reportCss = extractPrintCss();
+      // สำคัญ: ไม่ส่ง reportHtml/reportCss ตอน Save เพื่อไม่ให้สร้าง PDF รอบแรก
+      delete data.reportHtml;
+      delete data.reportCss;
+      delete data.pdfFolderId;
 
-      // Apps Script รับ payload แบบ JSON ใน body
-      // no-cors ทำให้เบราว์เซอร์อ่าน response ไม่ได้ จึงยืนยันผลสำเร็จจากฝั่ง client โดยตรงไม่ได้
       await fetch(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
@@ -1213,23 +1263,23 @@ window.addEventListener("keydown", (e) => {
         body: JSON.stringify(data)
       });
 
-      // คำขอถูกส่งออกจากหน้าเว็บแล้ว แต่ no-cors ไม่สามารถยืนยันได้ว่า
-      // Google Sheets และ Drive ทำงานสำเร็จจริงหรือไม่
+      sessionStorage.setItem("PTA_saved_record", JSON.stringify({
+        recordId: data.recordId,
+        savedAt: data.timestamp
+      }));
       assessmentSaved = true;
       if (printBtn) {
         printBtn.disabled = false;
         printBtn.className = "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2 cursor-pointer";
       }
-      alert("ส่งคำขอบันทึกข้อมูลแล้ว กรุณาตรวจสอบ Google Sheet และโฟลเดอร์ Drive เพื่อยืนยันว่าบันทึกสำเร็จ");
+      btn.disabled = true;
+      btn.innerText = "✓ บันทึกข้อมูลแล้ว";
+      alert("ส่งคำขอบันทึกข้อมูลแล้ว กรุณาตรวจสอบ Google Sheet เพื่อยืนยันว่าบันทึกสำเร็จ จากนั้นกดพิมพ์รายงานเพื่อสร้าง PDF");
     } catch (error) {
       console.error("Error sending assessment:", error);
       assessmentSaved = false;
-      if (printBtn) {
-        printBtn.disabled = true;
-        printBtn.className = "bg-slate-300 text-slate-500 font-bold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 flex items-center gap-2 cursor-not-allowed";
-      }
-      alert("ไม่สามารถส่งคำขอได้: " + String(error));
-    } finally {
+      if (printBtn) printBtn.disabled = true;
+      alert("ไม่สามารถส่งคำขอได้: " + String(error.message || error));
       btn.disabled = false;
       btn.innerText = originalText;
     }

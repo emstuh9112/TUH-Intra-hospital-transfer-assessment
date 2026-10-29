@@ -375,10 +375,15 @@
                             <input type="checkbox" id="item_ekg_unstable" class="chk-high" data-equip="cardiac_risk">
                             <label for="item_ekg_unstable">Monitor EKG in unstable patient</label>
                         </div>
-                        <div class="item-wrapper flex items-center gap-2">
+                        <div class="item-wrapper flex items-center flex-wrap gap-2">
                             <input type="checkbox" id="item_high_alert" class="chk-high" data-equip="sedative">
-                            <label for="item_high_alert">High alert drug / IV sedative drug</label>
+                            <label for="item_high_alert">High alert drug</label>
                             <textarea id="high_alert_drug_list" rows="2" class="border rounded px-2 py-1 w-full md:w-64 text-xs" placeholder="ระบุรายการยา (พิมพ์ได้หลายบรรทัด)"></textarea>
+                        </div>
+                        <div class="item-wrapper flex items-center flex-wrap gap-2">
+                            <input type="checkbox" id="item_iv_sedative" class="chk-high" data-equip="sedative">
+                            <label for="item_iv_sedative">IV sedative drug</label>
+                            <textarea id="iv_sedative_drug_list" rows="2" class="border rounded px-2 py-1 w-full md:w-64 text-xs" placeholder="ระบุรายการยา (พิมพ์ได้หลายบรรทัด)"></textarea>
                         </div>
                         <div class="item-wrapper flex items-center gap-2">
                             <input type="checkbox" id="item_inotropic" class="chk-high">
@@ -881,12 +886,18 @@
                 requiredEquipments.add('Oxygen tank');
             }
 
-			if (document.getElementById('item_high_alert').checked) {
-    			requiredEquipments.add('Oral/Nasal airway');
-    			requiredEquipments.add('Oxygen tank');
-    			requiredEquipments.add('Ambu-bag');
-    			requiredEquipments.add('monitor sat');
-			}
+            // High alert drug: เพิ่ม Infusion pump
+            if (document.getElementById('item_high_alert').checked) {
+                requiredEquipments.add('Infusion pump');
+            }
+
+            // IV sedative drug: ใช้กฎอุปกรณ์ 4 รายการเดิม
+            if (document.getElementById('item_iv_sedative').checked) {
+                requiredEquipments.add('Oral/Nasal airway');
+                requiredEquipments.add('Oxygen tank');
+                requiredEquipments.add('Ambu-bag');
+                requiredEquipments.add('monitor sat');
+            }
 
             if (document.getElementById('item_mon_sat').checked || document.getElementById('item_cannula').checked || document.getElementById('item_mask_bag').checked) {
                 requiredEquipments.add('monitor sat');
